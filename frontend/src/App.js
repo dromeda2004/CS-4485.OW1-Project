@@ -2,7 +2,8 @@ import React from "react";
 
 export const Dashboard = () => {
   return (
-    <div className="bg-[#517b9d] w-full min-w-[1214px] min-h-[755px] relative">
+    <div className="bg-[#517b9d] w-screen h-screen flex items-center justify-center">
+       <div className="w-[1200px] h-[800px] relative">
       <div className="absolute top-[34px] left-[304px] w-[646px] [font-family:'Inter-Bold',Helvetica] font-bold text-white text-[40px] text-center tracking-[0] leading-[normal] whitespace-nowrap">
         DISASTER TRACKER
       </div>
@@ -66,6 +67,7 @@ export const Dashboard = () => {
 
 
       <div className="absolute top-[177px] left-[576px] w-64 h-5 bg-[#f2f2f2] rounded-[5px]" />
+      </div>
     </div>
   );
 };

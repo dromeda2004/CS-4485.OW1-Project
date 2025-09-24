@@ -7,6 +7,12 @@
   }
 }
 
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-background-brand-default); /* or your theme */
+}
+
 :root {
   --color-background-brand-default: var(--color-primitives-brand-800);
   --color-background-brand-hover: var(--color-primitives-brand-900);
