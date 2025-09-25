@@ -1,75 +1,136 @@
-import React from "react";
+import React, { useState } from "react";
 
-export const Dashboard = () => {
+export default function DisasterTracker() {
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("All");
+
+  // Example posts data
+  const posts = [
+    {
+      user: "User1",
+      time: "2h",
+      text: "Massive flood in India displaces thousands of people.",
+      hashtag: "#IndiaFlood",
+      category: "Floods and Typhoons",
+    },
+    {
+      user: "User2",
+      time: "5h",
+      text: "Tropical cyclone causes severe damage in Philippines.",
+      hashtag: "#Typhoon",
+      category: "Floods and Typhoons",
+    },
+    {
+      user: "User3",
+      time: "1d",
+      text: "Strong earthquake hits California, shaking buildings.",
+      hashtag: "#Earthquake",
+      category: "Earthquakes",
+    },
+    {
+      user: "User4",
+      time: "3d",
+      text: "Wildfires spread rapidly in Australia causing evacuations.",
+      hashtag: "#Wildfire",
+      category: "Wildfires",
+    },
+  ];
+
+  // Filtering logic
+  const filteredPosts = posts.filter((post) => {
+    const matchesSearch =
+      post.text.toLowerCase().includes(search.toLowerCase()) ||
+      post.hashtag.toLowerCase().includes(search.toLowerCase());
+
+    const matchesFilter = filter === "All" || post.category === filter;
+
+    return matchesSearch && matchesFilter;
+  });
+
   return (
-    <div className="bg-[#517b9d] w-screen h-screen flex items-center justify-center">
-       <div className="w-[1200px] h-[800px] relative">
-      <div className="absolute top-[34px] left-[304px] w-[646px] [font-family:'Inter-Bold',Helvetica] font-bold text-white text-[40px] text-center tracking-[0] leading-[normal] whitespace-nowrap">
-        DISASTER TRACKER
+    <div className="bg-[#517b9d] min-h-screen flex flex-col items-center p-6 font-sans">
+      {/* Title */}
+      <h1 className="text-white font-bold text-3xl mb-6">DISASTER TRACKER</h1>
+
+      {/* Search */}
+      <div className="flex items-center bg-white rounded-lg shadow px-3 py-2 w-[400px] mb-4">
+        <input
+          type="text"
+          placeholder="Search hashtags"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-1 outline-none text-gray-700"
+        />
+        <span className="text-gray-500 text-lg ml-2">🔍</span>
       </div>
 
-      <div className="absolute top-[228px] left-[59px] w-[708px] h-[483px] bg-white rounded-[15px]" />
-
-      <div className="absolute top-[228px] left-[789px] w-[355px] h-[483px] bg-white rounded-[15px]" />
-
-      <div className="absolute top-[313px] left-[812px] w-[307px] h-[147px] bg-white rounded-[15px] border-2 border-solid border-[#f0f4f6]" />
-
-      <div className="absolute top-[475px] left-[814px] w-[307px] h-[131px] bg-white rounded-[15px] border-2 border-solid border-[#f0f4f6]" />
-
-      <div className="absolute top-[251px] left-[818px] w-[307px] font-subheadings font-[number:var(--subheadings-font-weight)] text-[#19293c] text-[length:var(--subheadings-font-size)] tracking-[var(--subheadings-letter-spacing)] leading-[var(--subheadings-line-height)] [font-style:var(--subheadings-font-style)]">
-        Breaking Posts
+      {/* Filter */}
+      <div className="text-white mb-4 flex gap-2 items-center">
+        <span>Filter by disaster:</span>
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="px-3 py-1 rounded-md text-gray-700"
+        >
+          <option>All</option>
+          <option>Floods and Typhoons</option>
+          <option>Earthquakes</option>
+          <option>Wildfires</option>
+          <option>Hurricanes</option>
+        </select>
       </div>
 
-      <div className="absolute top-[633px] left-[59px] w-[708px] h-[79px] bg-white rounded-[0px_0px_15px_15px]" />
-
-      <div className="absolute top-[659px] left-[100px] w-[132px] font-inner font-[number:var(--inner-font-weight)] text-black text-[length:var(--inner-font-size)] tracking-[var(--inner-letter-spacing)] leading-[var(--inner-line-height)] [font-style:var(--inner-font-style)]">
-        Heatmap
-      </div>
-
-      <div className="absolute top-[659px] left-[250px] w-[472px] h-[27px] rounded-[5px] bg-[linear-gradient(90deg,rgba(251,232,115,1)_0%,rgba(230,55,76,1)_100%)]" />
-
-      <p className="absolute top-[365px] left-[837px] w-[274px] font-text font-[number:var(--text-font-weight)] text-transparent text-[length:var(--text-font-size)] tracking-[var(--text-letter-spacing)] leading-[var(--text-line-height)] [font-style:var(--text-font-style)]">
-        <span className="text-black font-text [font-style:var(--text-font-style)] font-[number:var(--text-font-weight)] tracking-[var(--text-letter-spacing)] leading-[var(--text-line-height)] text-[length:var(--text-font-size)]">
-          Massive flood in India displaces thousands of people.{" "}
-        </span>
-
-        <span className="text-[#2a457b] font-text [font-style:var(--text-font-style)] font-[number:var(--text-font-weight)] tracking-[var(--text-letter-spacing)] leading-[var(--text-line-height)] text-[length:var(--text-font-size)]">
-          #IndiaFlood
-        </span>
-      </p>
-
-      <p className="absolute top-[531px] left-[837px] w-[274px] font-text font-[number:var(--text-font-weight)] text-transparent text-[length:var(--text-font-size)] tracking-[var(--text-letter-spacing)] leading-[var(--text-line-height)] [font-style:var(--text-font-style)]">
-        <span className="text-black font-text [font-style:var(--text-font-style)] font-[number:var(--text-font-weight)] tracking-[var(--text-letter-spacing)] leading-[var(--text-line-height)] text-[length:var(--text-font-size)]">
-          Tropical cyclone causes severe damage in Phillipines.
-        </span>
-
-        <span className="text-[#2a457b] font-text [font-style:var(--text-font-style)] font-[number:var(--text-font-weight)] tracking-[var(--text-letter-spacing)] leading-[var(--text-line-height)] text-[length:var(--text-font-size)]">
-          {" "}
-          #Typhoon
-        </span>
-      </p>
-
-      <div className="absolute top-[326px] left-[1081px] w-[38px] font-text font-[number:var(--text-font-weight)] text-[#5f5e63] text-[length:var(--text-font-size)] tracking-[var(--text-letter-spacing)] leading-[var(--text-line-height)] [font-style:var(--text-font-style)]">
-        2h
-      </div>
-
-      <div className="absolute top-[488px] left-[1081px] w-[38px] font-text font-[number:var(--text-font-weight)] text-[#5f5e63] text-[length:var(--text-font-size)] tracking-[var(--text-letter-spacing)] leading-[var(--text-line-height)] [font-style:var(--text-font-style)]">
-        5h
-      </div>
-
-      <div className="absolute top-[329px] left-[873px] w-[77px] font-users font-[number:var(--users-font-weight)] text-black text-[length:var(--users-font-size)] tracking-[var(--users-letter-spacing)] leading-[var(--users-line-height)] whitespace-nowrap [font-style:var(--users-font-style)]">
-        User1
-      </div>
-
-      <div className="absolute top-[491px] left-[873px] w-[77px] font-users font-[number:var(--users-font-weight)] text-black text-[length:var(--users-font-size)] tracking-[var(--users-letter-spacing)] leading-[var(--users-line-height)] whitespace-nowrap [font-style:var(--users-font-style)]">
-        User2
-      </div>
-
-
-      <div className="absolute top-[177px] left-[576px] w-64 h-5 bg-[#f2f2f2] rounded-[5px]" />
+      {/* Main content */}
+      <div className="flex gap-6 w-full max-w-6xl">
+        {/* Heatmap */}
+        <div className="flex-1 bg-white rounded-xl shadow p-4 flex flex-col items-center">
+          <div className="w-full h-[400px] rounded-lg overflow-hidden">
+            {/* Placeholder heatmap image */}
+            <img
+              src="https://i.ibb.co/Scpnzwr/heatmap.png"
+              alt="Heatmap"
+              className="object-cover w-full h-full"
+            />
+          </div>
+          <div className="flex justify-between items-center w-full mt-2 text-sm text-gray-600">
+            <span>Heatmap</span>
+            <div className="h-2 w-40 bg-gradient-to-r from-yellow-300 via-orange-400 to-red-500 rounded"></div>
+          </div>
+        </div>
+  <div className="absolute top-[659px] left-[250px] w-[472px] h-[27px] rounded-[5px] bg-[linear-gradient(90deg,rgba(251,232,115,1)_0%,rgba(230,55,76,1)_100%)]" />
+        {/* Breaking Posts */}
+        <div className="w-[300px] bg-white rounded-xl shadow p-4 flex flex-col">
+          <h2 className="font-bold text-lg text-gray-800 mb-3">Breaking Posts</h2>
+          <div className="space-y-3 flex-1 overflow-y-auto">
+            {filteredPosts.length > 0 ? (
+              filteredPosts.map((post, idx) => (
+                <div
+                  key={idx}
+                  className="border rounded-lg p-3 shadow-sm bg-gray-50"
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-semibold text-gray-800">
+                      {post.user}
+                    </span>
+                    <span className="text-sm text-gray-500">{post.time}</span>
+                  </div>
+                  <p className="text-gray-700 text-sm">
+                    {post.text}{" "}
+                    <span className="text-blue-600 font-medium">
+                      {post.hashtag}
+                    </span>
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 text-sm">No posts found.</p>
+            )}
+          </div>
+          <button className="mt-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 font-medium text-gray-700">
+            See All
+          </button>
+        </div>
       </div>
     </div>
   );
-};
-
-export default Dashboard;
+}
