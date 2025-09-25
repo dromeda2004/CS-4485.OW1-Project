@@ -81,57 +81,58 @@ export default function DisasterTracker() {
         </select>
       </div>
 
-      {/* Main content */}
-      <div className="flex gap-6 w-full max-w-6xl">
-        {/* Heatmap */}
-        <div className="flex-1 bg-white rounded-xl shadow p-4 flex flex-col items-center">
-          <div className="w-full h-[400px] rounded-lg overflow-hidden">
-            {/* Placeholder heatmap image */}
-            {<img
-              src= {heatmap}
-              alt="Heatmap"
-              className="object-cover w-full h-full"
-            />}
-          </div>
-      <div className="absolute top-[659px] left-[200px] w-[132px] font-inner font-[number:var(--inner-font-weight)] text-black text-[length:var(--inner-font-size)] tracking-[var(--inner-letter-spacing)] leading-[var(--inner-line-height)] [font-style:var(--inner-font-style)]">
-        Heatmap
-      </div>
-        <div className="absolute top-[659px] left-[450px] w-[472px] h-[27px] rounded-[5px] bg-[linear-gradient(90deg,rgba(251,232,115,1)_0%,rgba(230,55,76,1)_100%)]" />
+{/* Main content */}
+<div className="flex gap-6 w-full max-w-6xl items-start">
+  {/* Heatmap */}
+  <div className="flex-1 bg-white rounded-xl shadow p-4 flex flex-col items-center">
+    {/* Heatmap Image */}
+    <div className="w-full h-[400px] rounded-lg overflow-hidden">
+      <img
+        src={heatmap}
+        alt="Heatmap"
+        className="object-cover w-full h-full"
+      />
+    </div>
 
-        </div>
-        {/* Breaking Posts */}
-        <div className="w-[300px] bg-white rounded-xl shadow p-4 flex flex-col">
-          <h2 className="font-bold text-lg text-gray-800 mb-3">Breaking Posts</h2>
-          <div className="space-y-3 flex-1 overflow-y-auto">
-            {filteredPosts.length > 0 ? (
-              filteredPosts.map((post, idx) => (
-                <div
-                  key={idx}
-                  className="border rounded-lg p-3 shadow-sm bg-gray-50"
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-semibold text-gray-800">
-                      {post.user}
-                    </span>
-                    <span className="text-sm text-gray-500">{post.time}</span>
-                  </div>
-                  <p className="text-gray-700 text-sm">
-                    {post.text}{" "}
-                    <span className="text-blue-600 font-medium">
-                      {post.hashtag}
-                    </span>
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500 text-sm">No posts found.</p>
-            )}
+    {/* Label + Gradient Bar */}
+    <div className="mt-4 flex items-center gap-4 w-full">
+      <span className="font-bold text-black text-lg">Heatmap</span>
+      <div className="flex-1 h-[27px] rounded-[5px] bg-gradient-to-r from-yellow-300 to-red-600" />
+    </div>
+  </div>
+
+  {/* Breaking Posts */}
+  <div className="w-[300px] bg-white rounded-xl shadow p-4 flex flex-col">
+    <h2 className="font-bold text-lg text-gray-800 mb-3">Breaking Posts</h2>
+    <div className="space-y-3 flex-1 overflow-y-auto">
+      {filteredPosts.length > 0 ? (
+        filteredPosts.map((post, idx) => (
+          <div
+            key={idx}
+            className="border rounded-lg p-3 shadow-sm bg-gray-50"
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-semibold text-gray-800">{post.user}</span>
+              <span className="text-sm text-gray-500">{post.time}</span>
+            </div>
+            <p className="text-gray-700 text-sm">
+              {post.text}{" "}
+              <span className="text-blue-600 font-medium">
+                {post.hashtag}
+              </span>
+            </p>
           </div>
-          <button className="mt-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 font-medium text-gray-700">
-            See All
-          </button>
-        </div>
-      </div>
+        ))
+      ) : (
+        <p className="text-gray-500 text-sm">No posts found.</p>
+      )}
+    </div>
+    <button className="mt-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 font-medium text-gray-700">
+      See All
+    </button>
+  </div>
+</div>
+
     </div>
   );
 }
