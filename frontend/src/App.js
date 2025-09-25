@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import heatmap from "./assets/mapplaceholder.png";
 
 export default function DisasterTracker() {
   const [search, setSearch] = useState("");
@@ -86,18 +87,18 @@ export default function DisasterTracker() {
         <div className="flex-1 bg-white rounded-xl shadow p-4 flex flex-col items-center">
           <div className="w-full h-[400px] rounded-lg overflow-hidden">
             {/* Placeholder heatmap image */}
-            <img
-              src="https://i.ibb.co/Scpnzwr/heatmap.png"
+            {<img
+              src= {heatmap}
               alt="Heatmap"
               className="object-cover w-full h-full"
-            />
+            />}
           </div>
-          <div className="flex justify-between items-center w-full mt-2 text-sm text-gray-600">
-            <span>Heatmap</span>
-            <div className="h-2 w-40 bg-gradient-to-r from-yellow-300 via-orange-400 to-red-500 rounded"></div>
-          </div>
+      <div className="absolute top-[659px] left-[200px] w-[132px] font-inner font-[number:var(--inner-font-weight)] text-black text-[length:var(--inner-font-size)] tracking-[var(--inner-letter-spacing)] leading-[var(--inner-line-height)] [font-style:var(--inner-font-style)]">
+        Heatmap
+      </div>
+        <div className="absolute top-[659px] left-[450px] w-[472px] h-[27px] rounded-[5px] bg-[linear-gradient(90deg,rgba(251,232,115,1)_0%,rgba(230,55,76,1)_100%)]" />
+
         </div>
-  <div className="absolute top-[659px] left-[250px] w-[472px] h-[27px] rounded-[5px] bg-[linear-gradient(90deg,rgba(251,232,115,1)_0%,rgba(230,55,76,1)_100%)]" />
         {/* Breaking Posts */}
         <div className="w-[300px] bg-white rounded-xl shadow p-4 flex flex-col">
           <h2 className="font-bold text-lg text-gray-800 mb-3">Breaking Posts</h2>
