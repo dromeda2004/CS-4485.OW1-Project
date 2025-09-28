@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import heatmap from "./assets/mapplaceholder.png";
+import {MapContainer, TileLayer} from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 
 export default function DisasterTracker() {
   const [search, setSearch] = useState("");
@@ -87,11 +89,17 @@ export default function DisasterTracker() {
   <div className="flex-1 bg-white rounded-xl shadow p-4 flex flex-col items-center">
     {/* Heatmap Image */}
     <div className="w-full h-[400px] rounded-lg overflow-hidden">
-      <img
+      {/* <img
         src={heatmap}
         alt="Heatmap"
         className="object-cover w-full h-full"
-      />
+      /> */}
+      <MapContainer center={[20, 0]} zoom={2} className="w-full h-full">
+        <TileLayer 
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+         </MapContainer>
     </div>
 
     {/* Label + Gradient Bar */}
