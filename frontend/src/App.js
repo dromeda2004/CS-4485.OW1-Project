@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import heatmap from "./assets/mapplaceholder.png";
 import {MapContainer, TileLayer} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { addressPoints } from "./addressPoints";
+import "leaflet.heat";
+import HeatmapLayer from "./components/HeatmapLayer";
 
 export default function DisasterTracker() {
   const [search, setSearch] = useState("");
@@ -38,6 +41,8 @@ export default function DisasterTracker() {
       category: "Wildfires",
     },
   ];
+
+
 
   // Filtering logic
   const filteredPosts = posts.filter((post) => {
@@ -94,11 +99,19 @@ export default function DisasterTracker() {
         alt="Heatmap"
         className="object-cover w-full h-full"
       /> */}
-      <MapContainer center={[20, 0]} zoom={2} className="w-full h-full">
+      <MapContainer center={[32.7767, -96.7970]} zoom={5} className="w-full h-full">
         <TileLayer 
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+
+        {/* Render a heatmap layer using the addressPoints (lat, lng, intensity) */}
+        <HeatmapLayer
+          points={addressPoints.map((p) => [p[0], p[1], Number(p[2]) || 1])}
+          options={{ radius: 25, blur: 15, maxZoom: 17 }}
+        />
+
+
          </MapContainer>
     </div>
 
