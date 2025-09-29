@@ -5,6 +5,7 @@ import "leaflet/dist/leaflet.css";
 import { addressPoints } from "./addressPoints";
 import "leaflet.heat";
 import HeatmapLayer from "./components/HeatmapLayer";
+import FAQ from "./components/FAQ";
 
 export default function DisasterTracker() {
   const [search, setSearch] = useState("");
@@ -41,8 +42,6 @@ export default function DisasterTracker() {
       category: "Wildfires",
     },
   ];
-
-
 
   // Filtering logic
   const filteredPosts = posts.filter((post) => {
@@ -153,6 +152,11 @@ export default function DisasterTracker() {
     </button>
   </div>
 </div>
+
+      {/* FAQ Section */}
+      <div className="w-full max-w-6xl mt-8">
+        <FAQ />
+      </div>
 
     </div>
   );
