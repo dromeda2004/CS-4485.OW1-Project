@@ -2,7 +2,11 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import FAQPage from "./pages/FAQPage";
+<<<<<<< HEAD
 import Landing from "./pages/Landing";
+=======
+import BreakingPosts from "./pages/BreakingPosts";
+>>>>>>> origin/main
 
 // ...existing code...
 export default function App() {
@@ -11,6 +15,7 @@ export default function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/home" element={<Home />} />
       <Route path="/faq" element={<FAQPage />} />
+      <Route path="/breakingposts" element={<BreakingPosts />} />
     </Routes>
   );
 }
