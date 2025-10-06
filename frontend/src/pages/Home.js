@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import { addressPoints } from "../addressPoints";
 import "leaflet.heat";
 import HeatmapLayer from "../components/HeatmapLayer";
+import { Link } from "react-router-dom";
 
 export default function Home() {
   const [search, setSearch] = useState("");
@@ -52,7 +53,15 @@ export default function Home() {
 
   return (
     <div className="bg-[#517b9d] min-h-screen flex flex-col items-center p-6 font-sans">
-      <h1 className="text-white font-bold text-3xl mb-6">DISASTER TRACKER</h1>
+      <header className="w-full max-w-6xl flex items-center justify-between mb-6">
+        <h1 className="text-white font-bold text-3xl">DISASTER TRACKER</h1>
+        <nav className="flex gap-3">
+          <Link to="/" className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20">Landing</Link>
+          <Link to="/home" className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20">Home</Link>
+          <Link to="/breakingposts" className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20">Breaking Posts</Link>
+          <Link to="/faq" className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20">FAQ</Link>
+        </nav>
+      </header>
 
       <div className="flex items-center bg-white rounded-lg shadow px-3 py-2 w-[400px] mb-4">
         <input
@@ -82,7 +91,7 @@ export default function Home() {
 
       <div className="flex gap-6 w-full max-w-6xl items-start">
         <div className="flex-1 bg-white rounded-xl shadow p-4 flex flex-col items-center">
-          <div className="w-full h-[400px] rounded-lg overflow-hidden">
+          <div className="w-full h-[80vh] rounded-lg overflow-hidden">
             <MapContainer center={[32.7767, -96.7970]} zoom={5} className="w-full h-full">
               <TileLayer
                 attribution='&copy; <a href="https://carto.com/attributions">CARTO</a> contributors'
@@ -104,31 +113,6 @@ export default function Home() {
             <span className="font-bold text-black text-lg">Heatmap</span>
             <div className="flex-1 h-[27px] rounded-[5px] bg-gradient-to-r from-yellow-300 to-red-600" />
           </div>
-        </div>
-
-        <div className="w-[300px] bg-white rounded-xl shadow p-4 flex flex-col">
-          <h2 className="font-bold text-lg text-gray-800 mb-3">Breaking Posts</h2>
-          <div className="space-y-3 flex-1 overflow-y-auto">
-            {filteredPosts.length > 0 ? (
-              filteredPosts.map((post, idx) => (
-                <div key={idx} className="border rounded-lg p-3 shadow-sm bg-gray-50">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-semibold text-gray-800">{post.user}</span>
-                    <span className="text-sm text-gray-500">{post.time}</span>
-                  </div>
-                  <p className="text-gray-700 text-sm">
-                    {post.text}{" "}
-                    <span className="text-blue-600 font-medium">{post.hashtag}</span>
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500 text-sm">No posts found.</p>
-            )}
-          </div>
-          <button className="mt-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 font-medium text-gray-700">
-            See All
-          </button>
         </div>
       </div>
     </div>
