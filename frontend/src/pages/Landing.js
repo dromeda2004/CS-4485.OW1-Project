@@ -18,6 +18,18 @@ export default function Landing() {
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
     }}>
+    <div style={{
+    display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 16, // space between title, text, and buttons
+      background: "rgba(255, 255, 255, 0.7)",
+      padding: "30px 40px",
+      borderRadius: 12,
+      boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+      textAlign: "center",
+  backdropFilter: "blur(8px)",          
+      }}>
       <h1 style={{ margin: 0, color: "#000000ff" }}>Welcome to Disaster Tracker</h1>
       <p style={{ maxWidth: 600, textAlign: "center", color: "#000000ff" }}>
         Choose where to go next.
@@ -41,6 +53,7 @@ export default function Landing() {
         }}>
           FAQ
         </Link>
+      </div>
       </div>
     </div>
   );
