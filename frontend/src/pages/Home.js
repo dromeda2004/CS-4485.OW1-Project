@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MapContainer, TileLayer } from "react-leaflet";
+import { MapContainer, TileLayer, CircleMarker, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { addressPoints } from "../addressPoints";
 import "leaflet.heat";
@@ -106,6 +106,39 @@ export default function Home() {
                   gradient: { 0.2: "#ffffb2", 0.4: "#fed976", 0.6: "#fd8d3c", 0.8: "#f03b20", 1.0: "#bd0026" },
                 }}
               />
+
+              {/*
+                Overlay small interactive CircleMarkers (transparent) so we can show a Tooltip on hover.
+                Adjust radius/pathOptions as needed. Assumes addressPoints entries: [lat, lng, weight, info?]
+              */}
+              {addressPoints.map((p, idx) => {
+                const lat = p[0];
+                const lng = p[1];
+                const weight = Number(p[2]) || 1;
+                const info = p[3] || `Intensity: ${weight}`;
+                // radius scaled from weight so larger signatures get larger hover target
+                const radius = Math.min(30, Math.max(6, weight * 4));
+                return (
+                  <CircleMarker
+                    key={`hover-${idx}`}
+                    center={[lat, lng]}
+                    radius={radius}
+                    // make marker mostly invisible but still interactive
+                    pathOptions={{ color: "#ffffff00", fillColor: "#ffffff00", weight: 1, fillOpacity: 0.01 }}
+                    eventHandlers={{
+                      // optional: additional handlers for click, etc.
+                    }}
+                  >
+                    <Tooltip direction="top" offset={[0, -radius - 6]} opacity={0.95} sticky>
+                      <div style={{ color: "#000" }}>
+                        <strong>Location</strong><br />
+                        {lat.toFixed(4)}, {lng.toFixed(4)}<br />
+                        <small>{info}</small>
+                      </div>
+                    </Tooltip>
+                  </CircleMarker>
+                );
+              })}
             </MapContainer>
           </div>
 
