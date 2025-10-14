@@ -89,9 +89,10 @@ export default function Home() {
         </select>
       </div>
 
-      <div className="flex gap-6 w-full max-w-6xl items-start">
-        <div className="flex-1 bg-white rounded-xl shadow p-4 flex flex-col items-center">
-          <div className="w-full h-[80vh] rounded-lg overflow-hidden">
+      <div className="flex gap-6 w-full items-start">
+        <div className="flex-1 bg-white rounded-xl shadow p-4 flex flex-col items-center w-full">
+          {/* larger map: use 90vh or calc to account for header/controls */}
+          <div className="w-full h-[90vh] md:h-[80vh] rounded-lg overflow-hidden">
             <MapContainer center={[32.7767, -96.7970]} zoom={5} className="w-full h-full">
               <TileLayer
                 attribution='&copy; <a href="https://carto.com/attributions">CARTO</a> contributors'

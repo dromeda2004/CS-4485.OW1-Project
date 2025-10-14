@@ -4,7 +4,7 @@ export default function FAQ() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center p-8 font-sans">
       {/* Title */}
-      <h1 className="text-3xl font-bold text-gray-800 mb-2">FAQs</h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-2">Frequently Asked Questions</h1>
       <p className="text-gray-600 mb-8 text-center max-w-xl">
         Find answers to common questions about our global disaster tracking platform
       </p>

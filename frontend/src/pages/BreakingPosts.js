@@ -1,4 +1,5 @@
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Searchbar from "../components/Searchbar";
 import BreakingPostList from "../components/BreakingPostList";
 
@@ -88,7 +89,35 @@ export default function DisasterTracker() {
 
   return (
     <div className="bg-[#517b9d] min-h-screen flex flex-col items-center p-6 font-sans">
-      <h1 className="text-white font-bold text-3xl mb-6">DISASTER TRACKER</h1>
+      <header className="w-full max-w-6xl flex items-center justify-between mb-6">
+        <h1 className="text-white font-bold text-3xl">DISASTER TRACKER</h1>
+        <nav className="flex gap-3">
+          <Link
+            to="/"
+            className="px-3 py-1 rounded-md bg-white/5 text-white hover:bg-white/10"
+          >
+            Landing
+          </Link>
+          <Link
+            to="/home"
+            className="px-3 py-1 rounded-md bg-white/5 text-white hover:bg-white/10"
+          >
+            Home
+          </Link>
+          <Link
+            to="/breakingposts"
+            className="px-3 py-1 rounded-md bg-white/5 text-white hover:bg-white/10"
+          >
+            Breaking Posts
+          </Link>
+          <Link
+            to="/faq"
+            className="px-3 py-1 rounded-md bg-white/5 text-white hover:bg-white/10"
+          >
+            FAQ
+          </Link>
+        </nav>
+      </header>
 
       {/* Search bar */}
       <Searchbar search={search} setSearch={setSearch} />
