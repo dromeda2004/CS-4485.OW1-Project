@@ -111,6 +111,12 @@ export default function DisasterTracker() {
             Breaking Posts
           </Link>
           <Link
+            to="/firstresponders"
+            className="px-3 py-1 rounded-md bg-white/5 text-white hover:bg-white/10"
+          >
+            First Responders
+          </Link>
+          <Link
             to="/faq"
             className="px-3 py-1 rounded-md bg-white/5 text-white hover:bg-white/10"
           >

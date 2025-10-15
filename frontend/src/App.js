@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import FAQPage from "./pages/FAQPage";
 import Landing from "./pages/Landing";
 import BreakingPosts from "./pages/BreakingPosts";
+import FirstResponders from "./pages/FirstResponders";
 
 // ...existing code...
 export default function App() {
@@ -13,6 +14,7 @@ export default function App() {
       <Route path="/home" element={<Home />} />
       <Route path="/faq" element={<FAQPage />} />
       <Route path="/breakingposts" element={<BreakingPosts />} />
+      <Route path="/firstresponders" element={<FirstResponders />} />
     </Routes>
   );
 }
