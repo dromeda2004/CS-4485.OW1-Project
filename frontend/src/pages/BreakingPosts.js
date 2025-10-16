@@ -20,6 +20,8 @@ export default function DisasterTracker() {
       likes: 1,
       location: "Atlanta",
       score: 1, // severity indicator
+      updated_at: "2025-09-28T21:19:26.379Z",
+      nearby_records: ["Alpharetta"],
     },
     {
       id: 2,
@@ -32,6 +34,8 @@ export default function DisasterTracker() {
       likes: 15,
       location: "Los Angeles",
       score: 4,
+      updated_at: "2025-09-27T10:45:00Z",
+      nearby_records: ["San Bernardino", "Santa Clarita"],
     },
     {
       id: 3,
@@ -44,6 +48,8 @@ export default function DisasterTracker() {
       likes: 10,
       location: "Mumbai",
       score: 3,
+      updated_at: "2025-09-29T10:00:00Z",
+      nearby_records: ["Thane", "Navi Mumbai"],
     },
     {
       id: 4,
@@ -55,6 +61,9 @@ export default function DisasterTracker() {
       reposts: 2,
       likes: 30,
       score: 3,
+      location: "India",
+      updated_at: "2025-09-29T09:45:00Z",
+      nearby_records: ["Mumbai", "Delhi"],
     },
     {
       id: 5,
@@ -65,16 +74,22 @@ export default function DisasterTracker() {
       category: "Floods and Typhoons",
       reposts: 1,
       likes: 3,
+      location: "Manila",
+      updated_at: "2025-09-20T10:00:00Z",
+      nearby_records: ["Quezon City", "Cavite"],
     },
     {
       id: 6,
       user: "User3",
       time: "2025-09-25 09:20",
       text: "Wildfires spreading in California hills.",
+      location: "California",
       hashtag: "#Wildfire",
       category: "Wildfires",
       reposts: 5,
       likes: 20,
+      updated_at: "2025-09-25T10:00:00Z",
+      nearby_records: ["Sacramento", "Los Angeles"],
     },
   ];
 

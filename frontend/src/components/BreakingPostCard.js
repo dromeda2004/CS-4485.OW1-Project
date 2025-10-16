@@ -1,12 +1,24 @@
 import React from 'react'
-
-function BreakingPostCard({ user, time, text, reposts, likes, score }) {
-  // 🔹 Color intensity by score
-  const severityColor =
-    score >= 4 ? "border-red-500 bg-red-50" :
-    score === 3 ? "border-orange-400 bg-orange-50" :
-    score === 2 ? "border-yellow-400 bg-yellow-50" :
-    "border-green-400 bg-green-50";
+function BreakingPostCard({
+  user,
+  time,
+  updated_at,
+  text,
+  reposts,
+  likes,
+  score,
+  location,
+  nearby_records = [],
+}) {
+  // 🔹 Background gradient based on severity
+  const severityStyle =
+    score >= 4
+      ? "from-red-50 to-red-100 border-red-300"
+      : score === 3
+      ? "from-orange-50 to-orange-100 border-orange-300"
+      : score === 2
+      ? "from-yellow-50 to-yellow-100 border-yellow-300"
+      : "from-green-50 to-green-100 border-green-300";
 
   // 🔹 Severity label
   const severityLabel =
@@ -16,40 +28,59 @@ function BreakingPostCard({ user, time, text, reposts, likes, score }) {
     "Low";
 
   return (
-    <div className={`border rounded-lg p-4 flex gap-3 items-start ${severityColor}`}>
+    <div
+      className={`border ${severityStyle} rounded-2xl p-5 flex gap-4 items-start 
+        bg-gradient-to-br shadow-md hover:shadow-xl 
+        hover:-translate-y-1 transition-all duration-300 ease-out`}
+    >
       {/* Avatar */}
-      <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center">
-        <span className="text-blue-700 font-bold">{user[0]}</span>
+      <div className="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center shadow-sm">
+        <span className="text-blue-700 font-bold text-lg">{user[0]}</span>
       </div>
 
       {/* Post content */}
       <div className="flex-1">
+        {/* Header */}
         <div className="flex justify-between items-center mb-1">
-          <span className="font-semibold">{user}</span>
+          <span className="font-semibold text-gray-800">{user}</span>
           <span className="text-xs text-gray-500">{time}</span>
         </div>
 
-        <p className="text-sm text-gray-700 mb-2">{text}</p>
+        {/* Text */}
+        <p className="text-sm text-gray-700 mb-3 leading-snug">{text}</p>
 
-        {/* 🔹 Severity Indicator */}
+        {/* Severity Badge */}
         {score && (
           <div
-            className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
-              score >= 4
-                ? "bg-red-200 text-red-800"
-                : score === 3
-                ? "bg-orange-200 text-orange-800"
-                : score === 2
-                ? "bg-yellow-200 text-yellow-800"
-                : "bg-green-200 text-green-800"
-            }`}
+            className={`inline-block px-3 py-1 text-xs font-semibold rounded-full shadow-sm
+              ${
+                score >= 4
+                  ? "bg-red-200 text-red-800"
+                  : score === 3
+                  ? "bg-orange-200 text-orange-800"
+                  : score === 2
+                  ? "bg-yellow-200 text-yellow-800"
+                  : "bg-green-200 text-green-800"
+              }`}
           >
             {severityLabel} ({score})
           </div>
         )}
 
-        <div className="text-xs text-gray-500 mt-2">
-          Reposts: {reposts}, Likes: {likes}
+        {/* Meta Info */}
+        <div className="text-xs text-gray-500 mt-3 space-y-1">
+          <div>📍 <span className="font-medium">{location}</span></div>
+          <div>💬 Reposts: {reposts} ❤️ Likes: {likes}</div>
+
+          {nearby_records.length > 0 && (
+            <div>🌐 Nearby: {nearby_records.join(", ")}</div>
+          )}
+
+          {updated_at && (
+            <div className="text-[11px] text-gray-400 italic">
+              Updated: {new Date(updated_at).toLocaleString()}
+            </div>
+          )}
         </div>
       </div>
     </div>
