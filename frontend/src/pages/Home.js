@@ -97,7 +97,7 @@ export default function Home() {
             <MapContainer center={[32.7767, -96.7970]} zoom={5} className="w-full h-full">
               <TileLayer
                 attribution='&copy; <a href="https://carto.com/attributions">CARTO</a> contributors'
-                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
+                url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
               />
               <HeatmapLayer
                 points={addressPoints.map((p) => [p[0], p[1], Number(p[2]) || 1])}
@@ -105,7 +105,7 @@ export default function Home() {
                   radius: 30,
                   blur: 20,
                   maxZoom: 17,
-                  gradient: { 0.2: "#ffffb2", 0.4: "#fed976", 0.6: "#fd8d3c", 0.8: "#f03b20", 1.0: "#bd0026" },
+                  gradient: { 0.2: "#fcde46", 0.4: "#f6b840", 0.6: "#eb7f35", 0.8: "#e4572e", 1.0: "#dc2726" },
                 }}
               />
 
