@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MapContainer, TileLayer, CircleMarker, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { addressPoints } from "../addressPoints";
+import { addressPoints as staticAddressPoints } from "../addressPoints";
+import { fetchAddressPoints } from "../api/addressPointsApi";
 import "leaflet.heat";
 import HeatmapLayer from "../components/HeatmapLayer";
 import { Link } from "react-router-dom";
@@ -9,6 +10,26 @@ import { Link } from "react-router-dom";
 export default function Home() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
+  const [points, setPoints] = useState(staticAddressPoints);
+  const [source, setSource] = useState('static');
+  const [loadingPoints, setLoadingPoints] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoadingPoints(true);
+    fetchAddressPoints()
+      .then(({ points: pnts, source: src }) => {
+        if (!mounted) return;
+        setPoints(pnts);
+        setSource(src);
+      })
+      .catch((err) => {
+        console.error('fetchAddressPoints failed', err);
+      })
+      .finally(() => mounted && setLoadingPoints(false));
+
+    return () => { mounted = false; };
+  }, []);
 
   const posts = [
     {
@@ -100,7 +121,7 @@ export default function Home() {
                 url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
               />
               <HeatmapLayer
-                points={addressPoints.map((p) => [p[0], p[1], Number(p[2]) || 1])}
+                points={points.map((p) => [p[0], p[1], Number(p[2]) || 1])}
                 options={{
                   radius: 30,
                   blur: 20,
@@ -113,11 +134,11 @@ export default function Home() {
                 Overlay small interactive CircleMarkers (transparent) so we can show a Tooltip on hover.
                 Adjust radius/pathOptions as needed. Assumes addressPoints entries: [lat, lng, weight, info?]
               */}
-              {addressPoints.map((p, idx) => {
+              {points.map((p, idx) => {
                 const lat = p[0];
                 const lng = p[1];
                 const weight = Number(p[2]) || 1;
-                const info = p[3] || `Intensity: ${weight}`;
+                const info = `Intensity: ${weight}`;
                 // radius scaled from weight so larger signatures get larger hover target
                 const radius = Math.min(30, Math.max(6, weight * 4));
                 return (
