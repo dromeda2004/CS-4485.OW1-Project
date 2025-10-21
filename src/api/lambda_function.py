@@ -3,6 +3,7 @@ import json
 import requests
 import os
 import logging
+import traceback
 from decimal import Decimal
 import boto3
 from botocore.exceptions import ClientError
@@ -13,6 +14,8 @@ from math import radians, cos, sin, asin, sqrt
 # Setup ----------------------------------------------------------
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 dynamodb_table = dynamodb.Table('DisasterHeatmapLocations')
+disaster_posts_table = dynamodb.Table('DisasterPosts')  # ✅ NEW TABLE
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -184,21 +187,15 @@ def delete_post(post_id):
 class DecimalEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Decimal):
-            # Check if it's an int or a float
-            if obj % 1 == 0:
-                return int(obj)
-            else:
-                return float(obj)
-        # Let the base class default method raise the TypeError
+            return int(obj) if obj % 1 == 0 else float(obj)
         return super(DecimalEncoder, self).default(obj)
-
 def build_response(status_code, body):
     # Include CORS headers so responses work when API Gateway uses Lambda Proxy
     return {
         'statusCode': status_code,
         'headers': {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',  # change '*' to your origin in production
+            'Access-Control-Allow-Origin': '*', 
             'Access-Control-Allow-Headers': 'Content-Type,Authorization',
             'Access-Control-Allow-Methods': 'GET,OPTIONS'
         },
@@ -243,26 +240,22 @@ def get_heatmap_elements():
         'heatmap_locations': heatmap_data
     })
 
-def scan_with_pagination(filter_expr, expr_attr_names, expr_attr_values):
-    items = []
-    exclusive_start_key = None
-    while True:
-        scan_kwargs = {
-            'FilterExpression': filter_expr,
-            'ExpressionAttributeNames': expr_attr_names,
-            'ExpressionAttributeValues': expr_attr_values,
-        }
-        if exclusive_start_key:
-            scan_kwargs['ExclusiveStartKey'] = exclusive_start_key
-        response = dynamodb_table.scan(**scan_kwargs)
-        items.extend(response.get('Items', []))
-        exclusive_start_key = response.get('LastEvaluatedKey')
-        if not exclusive_start_key:
-            break
-    return items
+def get_top_posts_from_ids(post_ids):
+    if not post_ids:
+        return []
+    top_posts = []
+    for post_id in post_ids:
+        try:
+            res = disaster_posts_table.get_item(Key={'post_id': post_id})
+            item = res.get('Item')
+            if item:
+                top_posts.append(convert_decimal(item))
+        except Exception as e:
+            logger.warning(f"Failed to fetch post {post_id}: {str(e)}")
+    return top_posts
 
+# ✅ Updated: search_location
 def search_location(search_string):
-
     if not search_string:
         return build_response(400, {"error": "Missing 'search_string' parameter"})
 
@@ -290,7 +283,6 @@ def search_location(search_string):
         lat = float(geometry['lat'])
         lon = float(geometry['lng'])
 
-        # Bounding box for scanning DynamoDB
         lat_min = lat - LAT_DEGREE
         lat_max = lat + LAT_DEGREE
         lon_degree = MILE_RADIUS / (69.172 * cos(radians(lat)))
@@ -302,7 +294,6 @@ def search_location(search_string):
             "#lon BETWEEN :lon_min AND :lon_max"
         )
         expr_attr_names = {"#lat": "lat", "#lon": "lon"}
-        
         expr_attr_values = {
             ":lat_min": Decimal(str(lat_min)),
             ":lat_max": Decimal(str(lat_max)),
@@ -310,7 +301,7 @@ def search_location(search_string):
             ":lon_max": Decimal(str(lon_max))
         }
 
-        items = scan_with_pagination(filter_expr, expr_attr_names, expr_attr_values)
+        items = scan_with_pagination_disaster_posts(filter_expr, expr_attr_names, expr_attr_values)
 
         nearby_records = []
         for item in items:
@@ -329,34 +320,49 @@ def search_location(search_string):
             "lat": lat,
             "lon": lon
         }
-        nearby_records = convert_decimal(nearby_records)
 
         return build_response(200, {
             'search-hit': search_hit,
-            'nearby-records': nearby_records
+            'nearby-records': convert_decimal(nearby_records)
         })
 
     except ClientError as e:
         logger.error(f"DynamoDB ClientError: {e}")
         return build_response(500, {"error": e.response['Error']['Message']})
-
     except requests.RequestException as e:
         logger.error(f"OpenCage API request error: {e}")
         return build_response(500, {"error": str(e)})
-
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
         return build_response(500, {"error": str(e)})
-    
+
+def scan_with_pagination_disaster_posts(filter_expr, expr_attr_names, expr_attr_values):
+    items = []
+    exclusive_start_key = None
+    while True:
+        scan_kwargs = {
+            'FilterExpression': filter_expr,
+            'ExpressionAttributeNames': expr_attr_names,
+            'ExpressionAttributeValues': expr_attr_values,
+        }
+        if exclusive_start_key:
+            scan_kwargs['ExclusiveStartKey'] = exclusive_start_key
+        response = disaster_posts_table.scan(**scan_kwargs)
+        items.extend(response.get('Items', []))
+        exclusive_start_key = response.get('LastEvaluatedKey')
+        if not exclusive_start_key:
+            break
+    return items
+
+# ✅ Updated: get_latest_disasters
 def get_latest_disasters():
     try:
-        response = dynamodb_table.scan()
+        response = disaster_posts_table.scan()
         items = response.get('Items', [])
 
-        # Convert updated_at to string (if not already) and sort
         sorted_items = sorted(
             items,
-            key=lambda x: str(x.get('updated_at', '')),
+            key=lambda x: str(x.get('ingested_at') or x.get('created_at', '')),
             reverse=True
         )
 

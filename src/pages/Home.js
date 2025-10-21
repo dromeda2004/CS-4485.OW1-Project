@@ -138,7 +138,8 @@ export default function Home() {
                 const lat = p[0];
                 const lng = p[1];
                 const weight = Number(p[2]) || 1;
-                const info = `Intensity: ${weight}`;
+                const disasterType = p[3];
+                const info = disasterType ? `Intensity: ${weight} — ${disasterType}` : `Intensity: ${weight}`;
                 // radius scaled from weight so larger signatures get larger hover target
                 const radius = Math.min(30, Math.max(6, weight * 4));
                 return (
