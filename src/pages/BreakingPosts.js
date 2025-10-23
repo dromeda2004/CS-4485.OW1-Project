@@ -2,97 +2,39 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Searchbar from "../components/Searchbar";
 import BreakingPostList from "../components/BreakingPostList";
+import { fetchAddressPoints } from "../api/addressPointsApi";
 
 export default function DisasterTracker() {
+  const [posts, setPosts] = useState([]);
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
 
-  // 🔹 Mock posts (based on /search-location structure)
-  const posts = [
-    {
-      id: 1,
-      user: "User7",
-      time: "2025-09-28 21:08",
-      text: "Apparently a hurricane has just formed over Atlanta",
-      hashtag: "#Hurricane",
-      category: "Hurricane",
-      reposts: 0,
-      likes: 1,
-      location: "Atlanta",
-      score: 1, // severity indicator
-      updated_at: "2025-09-28T21:19:26.379Z",
-      nearby_records: ["Alpharetta"],
-    },
-    {
-      id: 2,
-      user: "User3",
-      time: "2025-09-27 10:15",
-      text: "Wildfires are spreading fast near Los Angeles.",
-      hashtag: "#Wildfire",
-      category: "Wildfires",
-      reposts: 3,
-      likes: 15,
-      location: "Los Angeles",
-      score: 4,
-      updated_at: "2025-09-27T10:45:00Z",
-      nearby_records: ["San Bernardino", "Santa Clarita"],
-    },
-    {
-      id: 3,
-      user: "User5",
-      time: "2025-09-29 09:20",
-      text: "Heavy rainfall causing floods across Mumbai suburbs.",
-      hashtag: "#Floods",
-      category: "Floods and Typhoons",
-      reposts: 2,
-      likes: 10,
-      location: "Mumbai",
-      score: 3,
-      updated_at: "2025-09-29T10:00:00Z",
-      nearby_records: ["Thane", "Navi Mumbai"],
-    },
-    {
-      id: 4,
-      user: "User1",
-      time: "2025-09-29 09:20",
-      text: "Massive flood in India displaces thousands of people.",
-      hashtag: "#IndiaFlood",
-      category: "Floods and Typhoons",
-      reposts: 2,
-      likes: 30,
-      score: 3,
-      location: "India",
-      updated_at: "2025-09-29T09:45:00Z",
-      nearby_records: ["Mumbai", "Delhi"],
-    },
-    {
-      id: 5,
-      user: "User2",
-      time: "2025-09-20 09:20",
-      text: "Tropical cyclone causes severe damage in Philippines.",
-      hashtag: "#Typhoon",
-      category: "Floods and Typhoons",
-      reposts: 1,
-      likes: 3,
-      location: "Manila",
-      updated_at: "2025-09-20T10:00:00Z",
-      nearby_records: ["Quezon City", "Cavite"],
-    },
-    {
-      id: 6,
-      user: "User3",
-      time: "2025-09-25 09:20",
-      text: "Wildfires spreading in California hills.",
-      location: "California",
-      hashtag: "#Wildfire",
-      category: "Wildfires",
-      reposts: 5,
-      likes: 20,
-      updated_at: "2025-09-25T10:00:00Z",
-      nearby_records: ["Sacramento", "Los Angeles"],
-    },
-  ];
-
+  useEffect(() => {
+    async function loadPosts() {
+      try {
+        const { points, source } = await fetchAddressPoints();
+        // Map API response into BreakingPostCard-friendly objects
+        const mappedPosts = points.map((p, i) => ({
+          id: i,
+          user: "LiveUser",
+          time: new Date().toISOString(),
+          text: `Disaster reported at ${p[4] ?? "unknown location"}`,
+          hashtag: `#${p[3] ?? "Disaster"}`,
+          category: p[3] ?? "Unknown",
+          reposts: 0,
+          likes: p[2] ?? 1,
+          location: p[4] ?? "Unknown",
+          score: Math.ceil((p[2] ?? 1) / 25), // map weight -> severity 1-4
+          updated_at: new Date().toISOString(),
+          nearby_records: [],
+        }));
+        setPosts(mappedPosts);
+      } catch (err) {
+        console.error("Failed to load live posts", err);
+      }
+    }
+    loadPosts();
+  }, []);
   // 🔹 Filtering logic
   const filteredPosts = posts.filter((post) => {
     const matchesSearch =

@@ -134,35 +134,31 @@ export default function Home() {
                 Overlay small interactive CircleMarkers (transparent) so we can show a Tooltip on hover.
                 Adjust radius/pathOptions as needed. Assumes addressPoints entries: [lat, lng, weight, info?]
               */}
-              {points.map((p, idx) => {
-                const lat = p[0];
-                const lng = p[1];
-                const weight = Number(p[2]) || 1;
-                const disasterType = p[3];
-                const info = disasterType ? `Intensity: ${weight} — ${disasterType}` : `Intensity: ${weight}`;
-                // radius scaled from weight so larger signatures get larger hover target
-                const radius = Math.min(30, Math.max(6, weight * 4));
-                return (
-                  <CircleMarker
-                    key={`hover-${idx}`}
-                    center={[lat, lng]}
-                    radius={radius}
-                    // make marker mostly invisible but still interactive
-                    pathOptions={{ color: "#ffffff00", fillColor: "#ffffff00", weight: 1, fillOpacity: 0.01 }}
-                    eventHandlers={{
-                      // optional: additional handlers for click, etc.
-                    }}
-                  >
-                    <Tooltip direction="top" offset={[0, -radius - 6]} opacity={0.95} sticky>
-                      <div style={{ color: "#000" }}>
-                        <strong>Location</strong><br />
-                        {lat.toFixed(4)}, {lng.toFixed(4)}<br />
-                        <small>{info}</small>
-                      </div>
-                    </Tooltip>
-                  </CircleMarker>
-                );
-              })}
+{points.map((p, idx) => {
+  const [lat, lng, weight, disasterType, name] = p;
+  const info = disasterType
+    ? `Intensity: ${weight} — ${disasterType}`
+    : `Intensity: ${weight}`;
+  const radius = Math.min(30, Math.max(6, weight * 4));
+
+  return (
+    <CircleMarker
+      key={`hover-${idx}`}
+      center={[lat, lng]}
+      radius={radius}
+      pathOptions={{ color: "#ffffff00", fillColor: "#ffffff00", weight: 1, fillOpacity: 0.01 }}
+    >
+      <Tooltip direction="top" offset={[0, -radius - 6]} opacity={0.95} sticky>
+        <div style={{ color: "#000" }}>
+          <strong>{name || "Unknown Location"}</strong><br />
+          {info}<br />
+          <small>{lat.toFixed(4)}, {lng.toFixed(4)}</small>
+        </div>
+      </Tooltip>
+    </CircleMarker>
+  );
+})}
+
             </MapContainer>
           </div>
 

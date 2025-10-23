@@ -60,7 +60,7 @@ export async function fetchAddressPoints({ url = process.env.REACT_APP_HEATMAP_U
         // Multiply avg_score/intensity by 100 as requested
         const rawScore = Number(loc.intensity ?? loc.weight ?? loc.avg_score ?? 0) || 0;
         const weight = Math.max(1, rawScore * 100);
-
+        const name = loc.location_name;
         // Determine dominant disaster type from disaster_breakdown (object of {type: count})
         let disasterType = undefined;
         const breakdown = loc.disaster_breakdown || {};
@@ -71,14 +71,18 @@ export async function fetchAddressPoints({ url = process.env.REACT_APP_HEATMAP_U
             disasterType = entries[0][0];
           }
         }
+       
+        return [lat, lng, weight, disasterType, name];
 
-        return [lat, lng, weight, disasterType];
       });
+      
       if (mapped.length === 0) {
         console.warn('addressPoints API returned empty heatmap_locations, using static points');
         return { points: staticPoints, source: 'static' };
       }
       return { points: mapped, source: 'live' };
+      
+      
     }
 
     const normalized = normalizePoints(data);
