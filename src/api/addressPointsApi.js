@@ -59,7 +59,7 @@ export async function fetchAddressPoints({ url = process.env.REACT_APP_HEATMAP_U
         const lng = Number(loc.lon ?? loc.lng ?? loc.longitude);
         // Multiply avg_score/intensity by 100 as requested
         const rawScore = Number(loc.intensity ?? loc.weight ?? loc.avg_score ?? 0) || 0;
-        const weight = Math.max(1, rawScore * 100);
+        const weight = Math.round(Math.max(1, rawScore * 100));
         const name = loc.location_name;
         // Determine dominant disaster type from disaster_breakdown (object of {type: count})
         let disasterType = undefined;

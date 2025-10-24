@@ -31,6 +31,29 @@ export default function Home() {
     return () => { mounted = false; };
   }, []);
 
+  // Map raw disaster type string to one of the UI filter categories
+  function classifyDisasterType(type) {
+    if (!type) return undefined;
+    const t = String(type).toLowerCase();
+    if (t.includes('wildfire')) return 'Wildfires';
+    if (t.includes('earthquake')) return 'Earthquakes';
+    if (t.includes('tsunami')) return 'Tsunamis';
+    if (t.includes('flood')) return 'Floods';
+    if (t.includes('tornado')) return 'Tornado';
+    // storm category includes cyclone, storm, typhoon, hurricane
+    if (t.includes('storm') || t.includes('cyclone') || t.includes('typhoon') || t.includes('hurricane')) return 'Storms';
+    return undefined;
+  }
+
+  // Filtered points according to the selected disaster category
+  const filteredPoints = points.filter((p) => {
+    if (!p || !Array.isArray(p)) return false;
+    if (filter === 'All') return true;
+    const disasterType = p[3];
+    const category = classifyDisasterType(disasterType);
+    return category === filter;
+  });
+
   const posts = [
     {
       user: "User1",
@@ -104,10 +127,12 @@ export default function Home() {
           className="px-3 py-1 rounded-md text-gray-700"
         >
           <option>All</option>
-          <option>Floods and Typhoons</option>
+          <option>Storms</option>
+          <option>Tornado</option>
+          <option>Floods</option>
+          <option>Tsunamis</option>
           <option>Earthquakes</option>
           <option>Wildfires</option>
-          <option>Hurricanes</option>
         </select>
       </div>
 
@@ -121,7 +146,7 @@ export default function Home() {
                 url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
               />
               <HeatmapLayer
-                points={points.map((p) => [p[0], p[1], Number(p[2]) || 1])}
+                points={filteredPoints.map((p) => [p[0], p[1], Number(p[2]) || 1])}
                 options={{
                   radius: 30,
                   blur: 20,
@@ -134,7 +159,7 @@ export default function Home() {
                 Overlay small interactive CircleMarkers (transparent) so we can show a Tooltip on hover.
                 Adjust radius/pathOptions as needed. Assumes addressPoints entries: [lat, lng, weight, info?]
               */}
-{points.map((p, idx) => {
+{filteredPoints.map((p, idx) => {
   const [lat, lng, weight, disasterType, name] = p;
   const info = disasterType
     ? `Intensity: ${weight} — ${disasterType}`
