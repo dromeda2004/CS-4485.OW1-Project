@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { MapContainer, TileLayer, CircleMarker, Tooltip } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Tooltip } from "react-leaflet";
+import L from 'leaflet';
 import "leaflet/dist/leaflet.css";
 import { addressPoints as staticAddressPoints } from "../addressPoints";
 import { fetchAddressPoints } from "../api/addressPointsApi";
@@ -53,6 +54,34 @@ export default function Home() {
     const category = classifyDisasterType(disasterType);
     return category === filter;
   });
+
+  // Icon cache to avoid recreating divIcons repeatedly
+  const iconCache = {};
+  function getCategoryIcon(category) {
+    const key = category || 'default';
+    if (iconCache[key]) return iconCache[key];
+
+    const emojiMap = {
+      'Wildfires': '🔥',
+      'Earthquakes': '🌎',
+      'Tsunamis': '🌊',
+      'Floods': '🌧️',
+      'Tornado': '🌪️',
+      'Storms': '⛈️',
+      'default': '📍'
+    };
+
+    const emoji = emojiMap[category] || emojiMap['default'];
+    const html = `
+      <div style="font-size:18px;line-height:18px;text-align:center;">
+        ${emoji}
+      </div>
+    `;
+
+    const icon = L.divIcon({ html, className: '', iconSize: [24, 24], iconAnchor: [12, 12] });
+    iconCache[key] = icon;
+    return icon;
+  }
 
   const posts = [
     {
@@ -161,26 +190,24 @@ export default function Home() {
               */}
 {filteredPoints.map((p, idx) => {
   const [lat, lng, weight, disasterType, name] = p;
-  const info = disasterType
-    ? `Intensity: ${weight} — ${disasterType}`
-    : `Intensity: ${weight}`;
-  const radius = Math.min(30, Math.max(6, weight * 4));
+  const info = disasterType ? `Intensity: ${weight} — ${disasterType}` : `Intensity: ${weight}`;
+  const category = (disasterType && classifyDisasterType(disasterType)) || undefined;
+  const icon = getCategoryIcon(category);
 
   return (
-    <CircleMarker
-      key={`hover-${idx}`}
-      center={[lat, lng]}
-      radius={radius}
-      pathOptions={{ color: "#ffffff00", fillColor: "#ffffff00", weight: 1, fillOpacity: 0.01 }}
+    <Marker
+      key={`marker-${idx}`}
+      position={[lat, lng]}
+      icon={icon}
     >
-      <Tooltip direction="top" offset={[0, -radius - 6]} opacity={0.95} sticky>
-        <div style={{ color: "#000" }}>
+      <Tooltip direction="top" offset={[0, -18]} opacity={0.95} sticky>
+        <div style={{ color: "#000", textAlign: 'center' }}>
           <strong>{name || "Unknown Location"}</strong><br />
           {info}<br />
           <small>{lat.toFixed(4)}, {lng.toFixed(4)}</small>
         </div>
       </Tooltip>
-    </CircleMarker>
+    </Marker>
   );
 })}
 
