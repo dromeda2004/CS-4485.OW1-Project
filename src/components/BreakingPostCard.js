@@ -11,21 +11,20 @@ function BreakingPostCard({
   nearby_records = [],
 }) {
   // 🔹 Background gradient based on severity
-  const severityStyle =
-    score >= 4
-      ? "from-red-50 to-red-100 border-red-300"
-      : score === 3
-      ? "from-orange-50 to-orange-100 border-orange-300"
-      : score === 2
-      ? "from-yellow-50 to-yellow-100 border-yellow-300"
-      : "from-green-50 to-green-100 border-green-300";
+const severityStyle =
+  score >= 200
+    ? "from-red-50 to-red-100 border-red-300"
+    : score >= 100
+    ? "from-orange-50 to-orange-100 border-orange-300"
+    : score >= 50
+    ? "from-yellow-50 to-yellow-100 border-yellow-300"
+    : "from-green-50 to-green-100 border-green-300";
 
-  // 🔹 Severity label
-  const severityLabel =
-    score >= 4 ? "Severe" :
-    score === 3 ? "High" :
-    score === 2 ? "Moderate" :
-    "Low";
+const severityLabel =
+  score >= 200 ? "Severe" :
+  score >= 100 ? "High" :
+  score >= 50  ? "Moderate" :
+  "Low";
 
   return (
     <div
