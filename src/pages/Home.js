@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Tooltip } from "react-leaflet";
 import L from 'leaflet';
 import "leaflet/dist/leaflet.css";
 import { addressPoints as staticAddressPoints } from "../addressPoints";
 import { fetchAddressPoints } from "../api/addressPointsApi";
+import { fetchFirstResponders } from "../api/firstRespondersApi";
 import "leaflet.heat";
 import HeatmapLayer from "../components/HeatmapLayer";
 import { Link } from "react-router-dom";
@@ -14,6 +15,8 @@ export default function Home() {
   const [points, setPoints] = useState(staticAddressPoints);
   const [source, setSource] = useState('static');
   const [loadingPoints, setLoadingPoints] = useState(false);
+  const [responders, setResponders] = useState([]);
+  const [responderFilters, setResponderFilters] = useState({ police: true, fire: true, hospital: true, shelter: true });
 
   useEffect(() => {
     let mounted = true;
@@ -29,6 +32,14 @@ export default function Home() {
       })
       .finally(() => mounted && setLoadingPoints(false));
 
+    return () => { mounted = false; };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    fetchFirstResponders()
+      .then((list) => { if (mounted) setResponders(Array.isArray(list) ? list : []); })
+      .catch((err) => console.warn('fetchFirstResponders failed', err));
     return () => { mounted = false; };
   }, []);
 
@@ -82,6 +93,60 @@ export default function Home() {
     iconCache[key] = icon;
     return icon;
   }
+
+  function getResponderIcon(type) {
+    const key = `responder-${type}`;
+    if (iconCache[key]) return iconCache[key];
+
+    const emojiByType = {
+      police: '🚓',
+      fire: '🚒',
+      hospital: '🏥',
+      shelter: '🛖',
+    };
+    const emoji = emojiByType[type] || '🆘';
+    const html = `
+      <div style="font-size:18px;line-height:18px;text-align:center;">
+        ${emoji}
+      </div>
+    `;
+    const icon = L.divIcon({ html, className: '', iconSize: [24, 24], iconAnchor: [12, 12] });
+    iconCache[key] = icon;
+    return icon;
+  }
+
+  function toRad(v) { return (v * Math.PI) / 180; }
+  function haversineKm(a, b) {
+    const R = 6371;
+    const dLat = toRad(b[0] - a[0]);
+    const dLon = toRad(b[1] - a[1]);
+    const lat1 = toRad(a[0]);
+    const lat2 = toRad(b[0]);
+    const h = Math.sin(dLat/2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon/2) ** 2;
+    return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+  }
+
+  const activeDisasterCoords = useMemo(() => filteredPoints.map((p) => [p[0], p[1]]), [filteredPoints]);
+
+  const visibleResponders = useMemo(() => {
+    if (!responders || responders.length === 0 || activeDisasterCoords.length === 0) return [];
+    const radiusKm = 200; // increased proximity radius to ensure visibility near active disasters
+    const enabledTypes = Object.entries(responderFilters).filter(([, v]) => v).map(([k]) => k);
+    if (enabledTypes.length === 0) return [];
+    return responders
+      .filter((r) => enabledTypes.includes(r.type))
+      .map((r) => {
+        let minDist = Infinity;
+        for (const dc of activeDisasterCoords) {
+          const d = haversineKm([r.lat, r.lng], dc);
+          if (d < minDist) minDist = d;
+        }
+        return { ...r, distanceKm: minDist };
+      })
+      .filter((r) => r.distanceKm <= radiusKm)
+      .sort((a, b) => a.distanceKm - b.distanceKm)
+      .slice(0, 300); // defensive cap
+  }, [responders, activeDisasterCoords, responderFilters]);
 
   const posts = [
     {
@@ -163,6 +228,23 @@ export default function Home() {
           <option>Earthquakes</option>
           <option>Wildfires</option>
         </select>
+        <span className="ml-4">First responders:</span>
+        <label className="flex items-center gap-1">
+          <input type="checkbox" checked={responderFilters.police} onChange={(e) => setResponderFilters((f) => ({ ...f, police: e.target.checked }))} />
+          <span>Police</span>
+        </label>
+        <label className="flex items-center gap-1">
+          <input type="checkbox" checked={responderFilters.fire} onChange={(e) => setResponderFilters((f) => ({ ...f, fire: e.target.checked }))} />
+          <span>Fire</span>
+        </label>
+        <label className="flex items-center gap-1">
+          <input type="checkbox" checked={responderFilters.hospital} onChange={(e) => setResponderFilters((f) => ({ ...f, hospital: e.target.checked }))} />
+          <span>Hospitals</span>
+        </label>
+        <label className="flex items-center gap-1">
+          <input type="checkbox" checked={responderFilters.shelter} onChange={(e) => setResponderFilters((f) => ({ ...f, shelter: e.target.checked }))} />
+          <span>Shelters</span>
+        </label>
       </div>
 
       <div className="flex gap-6 w-full items-start">
@@ -210,6 +292,23 @@ export default function Home() {
     </Marker>
   );
 })}
+
+              {visibleResponders.map((r, idx) => (
+                <Marker
+                  key={`responder-${idx}`}
+                  position={[r.lat, r.lng]}
+                  icon={getResponderIcon(r.type)}
+                >
+                  <Tooltip direction="top" offset={[0, -18]} opacity={0.95} sticky>
+                    <div style={{ color: "#000", textAlign: 'center' }}>
+                      <strong>{r.name}</strong><br />
+                      <span>{r.address}</span><br />
+                      {r.phone && (<span>{r.phone}</span>)}<br />
+                      <small>{r.distanceKm.toFixed(1)} km from nearest disaster</small>
+                    </div>
+                  </Tooltip>
+                </Marker>
+              ))}
 
             </MapContainer>
           </div>
