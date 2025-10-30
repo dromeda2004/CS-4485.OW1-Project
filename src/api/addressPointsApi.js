@@ -118,3 +118,42 @@ export async function fetchAddressPoints({ url = process.env.REACT_APP_HEATMAP_U
     return { points: staticPoints, source: 'static' };
   }
 }
+// src/api/breakingPostsApi.js
+const DEFAULT_LAMBDA_POSTS =
+  "https://lhncgjlrzotzbrvqulbeq5jm340jtaza.lambda-url.us-east-1.on.aws/breaking-disaster";
+
+export async function fetchBreakingPosts({
+  url = process.env.REACT_APP_POSTS_URL || DEFAULT_LAMBDA_POSTS,
+  timeout = 7000,
+} = {}) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(id);
+
+    if (!res.ok) {
+      console.warn("Posts API returned non-OK:", res.status);
+      return null;
+    }
+
+    const data = await res.json();
+
+    // Handle Lambda wrapping like { statusCode, body }
+    if (data && data.statusCode && data.body) {
+      try {
+        return JSON.parse(data.body);
+      } catch (e) {
+        console.warn("Posts API returned invalid JSON body:", e);
+        return null;
+      }
+    }
+
+    return data;
+  } catch (err) {
+    clearTimeout(id);
+    console.error("Failed to fetch breaking posts:", err);
+    return null;
+  }
+}

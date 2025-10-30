@@ -3,38 +3,50 @@ import { Link } from "react-router-dom";
 import Searchbar from "../components/Searchbar";
 import BreakingPostList from "../components/BreakingPostList";
 import { fetchAddressPoints } from "../api/addressPointsApi";
+import { fetchBreakingPosts } from "../api/addressPointsApi";
 
 export default function DisasterTracker() {
   const [posts, setPosts] = useState([]);
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
-
-  useEffect(() => {
+ useEffect(() => {
     async function loadPosts() {
       try {
-        const { points, source } = await fetchAddressPoints();
-        // Map API response into BreakingPostCard-friendly objects
-        const mappedPosts = points.map((p, i) => ({
+        const data = await fetchBreakingPosts();
+
+        if (!data) {
+          console.warn("No data returned from API");
+          return;
+        }
+
+        // Handle both possible structures
+        const arr = data.breaking_disasters ?? data.posts ?? [];
+
+        const mappedPosts = arr.map((p, i) => ({
           id: i,
-          user: "LiveUser",
-          time: new Date().toISOString(),
-          text: `Disaster reported at ${p[4] ?? "unknown location"}`,
-          hashtag: `#${p[3] ?? "Disaster"}`,
-          category: p[3] ?? "Unknown",
-          reposts: 0,
-          likes: p[2] ?? 1,
-          location: p[4] ?? "Unknown",
-          score: Math.ceil((p[2] ?? 1) / 25), // map weight -> severity 1-4
-          updated_at: new Date().toISOString(),
+          user: p.author || "Unknown",
+          time: p.created_at,
+          updated_at: p.ingested_at,
+          text: p.text,
+          hashtag: `#${p.disaster_type ?? "Disaster"}`,
+          category: p.disaster_type ?? "Unknown",
+          reposts: p.repostCount ?? 0,
+          likes: p.likeCount ?? 0,
+          location: p.location_name ?? "Unknown",
+          score: Math.ceil(p.score || 1),
           nearby_records: [],
         }));
+
         setPosts(mappedPosts);
       } catch (err) {
-        console.error("Failed to load live posts", err);
+        console.error("Failed to load breaking disasters", err);
       }
     }
+
     loadPosts();
   }, []);
+
+
   // 🔹 Filtering logic
   const filteredPosts = posts.filter((post) => {
     const matchesSearch =
