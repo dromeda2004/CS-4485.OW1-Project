@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Searchbar from "../components/Searchbar";
 import BreakingPostList from "../components/BreakingPostList";
-import { fetchAddressPoints } from "../api/addressPointsApi";
+//import { fetchAddressPoints } from "../api/addressPointsApi";
 import { fetchBreakingPosts } from "../api/addressPointsApi";
 
 export default function DisasterTracker() {
@@ -52,7 +52,12 @@ export default function DisasterTracker() {
     const matchesSearch =
       post.text.toLowerCase().includes(search.toLowerCase()) ||
       post.hashtag.toLowerCase().includes(search.toLowerCase());
-    const matchesFilter = filter === "All" || post.category === filter;
+     const normalizedCategory = (() => {
+    const c = post.category.toLowerCase();
+    if (["hurricane", "typhoon", "cyclone"].includes(c)) return "storm";
+    return c;
+  })();
+    const matchesFilter = filter === "All" || normalizedCategory === filter.toLowerCase();
     return matchesSearch && matchesFilter;
   });
 
@@ -104,9 +109,13 @@ export default function DisasterTracker() {
         className="mb-6 px-4 py-2 rounded-lg"
       >
         <option>All</option>
-        <option>Floods and Typhoons</option>
+        <option>Storm</option>
+        <option>Tornado</option>
+        <option>Flood</option>
+        <option>Tsunamis</option>
+        <option>Earthquake</option>
         <option>Wildfires</option>
-        <option>Hurricane</option>
+
       </select>
 
       {/* Updated posts */}

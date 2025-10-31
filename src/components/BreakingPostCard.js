@@ -42,22 +42,21 @@ const severityLabel =
         {/* Header */}
         <div className="flex justify-between items-center mb-1">
           <span className="font-semibold text-gray-800">{user}</span>
-          <span className="text-xs text-gray-500">{time}</span>
+          <span className="text-xs text-gray-500">{new Date(time).toLocaleString()}</span>
         </div>
 
         {/* Text */}
         <p className="text-sm text-gray-700 mb-3 leading-snug">{text}</p>
-
         {/* Severity Badge */}
         {score && (
           <div
             className={`inline-block px-3 py-1 text-xs font-semibold rounded-full shadow-sm
               ${
-                score >= 4
+                score >= 200
                   ? "bg-red-200 text-red-800"
-                  : score === 3
+                  : score === 100
                   ? "bg-orange-200 text-orange-800"
-                  : score === 2
+                  : score === 50
                   ? "bg-yellow-200 text-yellow-800"
                   : "bg-green-200 text-green-800"
               }`}
