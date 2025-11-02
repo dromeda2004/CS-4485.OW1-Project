@@ -96,6 +96,12 @@ export default function DisasterTracker() {
           >
             FAQ
           </Link>
+          <Link
+            to="/statistics"
+            className="px-3 py-1 rounded-md bg-white/5 text-white hover:bg-white/10"
+          >
+            Statistics
+          </Link>
         </nav>
       </header>
 
