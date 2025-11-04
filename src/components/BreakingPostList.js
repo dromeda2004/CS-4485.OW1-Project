@@ -29,7 +29,7 @@ const handleToggle = () => {
 };
 
   return (
-    <div className="bg-white w-full max-w-2xl rounded-xl shadow p-4">
+  <div className="bg-white w-full max-w-6xl rounded-xl shadow p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-semibold text-lg">Breaking Posts</h2>
         <button
@@ -40,11 +40,14 @@ const handleToggle = () => {
         </button>
       </div>
 
-      <div className="flex flex-col gap-4">
-        {sortedPosts.map((post) => (
-          <BreakingPostCard key={post.id} {...post} />
-        ))}
-      </div>
+     <div className="flex flex-wrap gap-4 justify-between">
+  {sortedPosts.map((post) => (
+    <div key={post.id} className="w-[48%]">
+      <BreakingPostCard {...post} />
+    </div>
+  ))}
+</div>
+
 
       <button className="w-full text-center text-sm text-blue-600 mt-4 py-2 hover:underline">
         See All
