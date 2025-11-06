@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { MapContainer, TileLayer, Marker, Tooltip } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Tooltip, Popup } from "react-leaflet";
 import L from 'leaflet';
 import "leaflet/dist/leaflet.css";
 import { addressPoints as staticAddressPoints } from "../addressPoints";
@@ -283,13 +283,13 @@ export default function Home() {
       position={[lat, lng]}
       icon={icon}
     >
-      <Tooltip direction="top" offset={[0, -18]} opacity={0.95} sticky>
+      <Popup>
         <div style={{ color: "#000", textAlign: 'center' }}>
           <strong>{name || "Unknown Location"}</strong><br />
           {info}<br />
           <small>{lat.toFixed(4)}, {lng.toFixed(4)}</small>
         </div>
-      </Tooltip>
+      </Popup>
     </Marker>
   );
 })}
@@ -300,14 +300,14 @@ export default function Home() {
                   position={[r.lat, r.lng]}
                   icon={getResponderIcon(r.type)}
                 >
-                  <Tooltip direction="top" offset={[0, -18]} opacity={0.95} sticky>
+                  <Popup>
                     <div style={{ color: "#000", textAlign: 'center' }}>
                       <strong>{r.name}</strong><br />
                       <span>{r.address}</span><br />
                       {r.phone && (<span>{r.phone}</span>)}<br />
                       <small>{r.distanceKm.toFixed(1)} km from nearest disaster</small>
                     </div>
-                  </Tooltip>
+                  </Popup>
                 </Marker>
               ))}
 
