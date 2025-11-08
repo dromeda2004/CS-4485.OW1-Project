@@ -157,3 +157,40 @@ export async function fetchBreakingPosts({
     return null;
   }
 }
+
+const DEFAULT_TOP_POSTS_API = process.env.REACT_APP_TOP_POSTS_URL || "https://8rhqi3yodd.execute-api.us-east-1.amazonaws.com/production/top-posts";
+
+export async function fetchTopPostsByLocation(locationName, { url = DEFAULT_TOP_POSTS_API, timeout = 7000 } = {}) {
+  if (!locationName) return null;
+
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const fullUrl = `${url}?location_name=${encodeURIComponent(locationName)}`;
+    const res = await fetch(fullUrl, { signal: controller.signal });
+    clearTimeout(id);
+
+    if (!res.ok) {
+      console.warn("topPosts API returned non-OK status:", res.status);
+      return null;
+    }
+
+    const data = await res.json();
+
+    if (data && data.statusCode && data.body) {
+      try {
+        return JSON.parse(data.body);
+      } catch (e) {
+        console.warn("topPosts API returned invalid JSON body:", e);
+        return null;
+      }
+    }
+
+    return data;
+  } catch (err) {
+    clearTimeout(id);
+    console.error("Failed to fetch top posts:", err);
+    return null;
+  }
+}

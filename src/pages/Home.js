@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { MapContainer, TileLayer, Marker, Tooltip, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker,  Popup } from "react-leaflet";
 import L from 'leaflet';
 import "leaflet/dist/leaflet.css";
 import { addressPoints as staticAddressPoints } from "../addressPoints";
-import { fetchAddressPoints } from "../api/addressPointsApi";
+import { fetchAddressPoints, fetchTopPostsByLocation} from "../api/addressPointsApi";
 import { fetchFirstResponders } from "../api/firstRespondersApi";
 import "leaflet.heat";
 import HeatmapLayer from "../components/HeatmapLayer";
@@ -17,6 +17,9 @@ export default function Home() {
   const [loadingPoints, setLoadingPoints] = useState(false);
   const [responders, setResponders] = useState([]);
   const [responderFilters, setResponderFilters] = useState({ police: true, fire: true, hospital: true, shelter: true });
+  const [topPost, setTopPost] = useState(null);
+const [loadingTopPost, setLoadingTopPost] = useState(false);
+const [topPostError, setTopPostError] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -148,46 +151,53 @@ export default function Home() {
       .slice(0, 300); // defensive cap
   }, [responders, activeDisasterCoords, responderFilters]);
 
-  const posts = [
-    {
-      user: "User1",
-      time: "2h",
-      text: "Massive flood in India displaces thousands of people.",
-      hashtag: "#IndiaFlood",
-      category: "Floods and Typhoons",
-    },
-    {
-      user: "User2",
-      time: "5h",
-      text: "Tropical cyclone causes severe damage in Philippines.",
-      hashtag: "#Typhoon",
-      category: "Floods and Typhoons",
-    },
-    {
-      user: "User3",
-      time: "1d",
-      text: "Strong earthquake hits California, shaking buildings.",
-      hashtag: "#Earthquake",
-      category: "Earthquakes",
-    },
-    {
-      user: "User4",
-      time: "3d",
-      text: "Wildfires spread rapidly in Australia causing evacuations.",
-      hashtag: "#Wildfire",
-      category: "Wildfires",
-    },
-  ];
+  // const posts = [
+  //   {
+  //     user: "User1",
+  //     time: "2h",
+  //     text: "Massive flood in India displaces thousands of people.",
+  //     hashtag: "#IndiaFlood",
+  //     category: "Floods and Typhoons",
+  //   },
+  //   {
+  //     user: "User2",
+  //     time: "5h",
+  //     text: "Tropical cyclone causes severe damage in Philippines.",
+  //     hashtag: "#Typhoon",
+  //     category: "Floods and Typhoons",
+  //   },
+  //   {
+  //     user: "User3",
+  //     time: "1d",
+  //     text: "Strong earthquake hits California, shaking buildings.",
+  //     hashtag: "#Earthquake",
+  //     category: "Earthquakes",
+  //   },
+  //   {
+  //     user: "User4",
+  //     time: "3d",
+  //     text: "Wildfires spread rapidly in Australia causing evacuations.",
+  //     hashtag: "#Wildfire",
+  //     category: "Wildfires",
+  //   },
+  // ];
+async function showTopPost(locationName) {
+  setLoadingTopPost(true);
+  setTopPostError(null);
+  setTopPost(null);
 
-  const filteredPosts = posts.filter((post) => {
-    const matchesSearch =
-      post.text.toLowerCase().includes(search.toLowerCase()) ||
-      post.hashtag.toLowerCase().includes(search.toLowerCase());
-
-    const matchesFilter = filter === "All" || post.category === filter;
-
-    return matchesSearch && matchesFilter;
-  });
+  try {
+    const data = await fetchTopPostsByLocation(locationName);
+    if (data && data.top_posts && data.top_posts.length > 0) {
+      setTopPost(data.top_posts[0]);
+    } else {
+      setTopPostError("No top posts found for this location.");
+    }
+  } catch (err) {
+    setTopPostError(err.message || "Failed to fetch top post.");
+  }
+  setLoadingTopPost(false);
+}
 
   return (
     <div className="bg-[#517b9d] min-h-screen flex flex-col items-center p-6 font-sans">
@@ -272,7 +282,7 @@ export default function Home() {
                 Adjust radius/pathOptions as needed. Assumes addressPoints entries: [lat, lng, weight, info?]
               */}
 {filteredPoints.map((p, idx) => {
-  const [lat, lng, weight, disasterType, name] = p;
+  const [lat, lng, weight, disasterType, locationName] = p;
   const info = disasterType ? `Intensity: ${weight} — ${disasterType}` : `Intensity: ${weight}`;
   const category = (disasterType && classifyDisasterType(disasterType)) || undefined;
   const icon = getCategoryIcon(category);
@@ -285,9 +295,24 @@ export default function Home() {
     >
       <Popup>
         <div style={{ color: "#000", textAlign: 'center' }}>
-          <strong>{name || "Unknown Location"}</strong><br />
+          <strong>{locationName || "Unknown Location"}</strong><br />
           {info}<br />
-          <small>{lat.toFixed(4)}, {lng.toFixed(4)}</small>
+          <small>{lat.toFixed(4)}, {lng.toFixed(4)}</small><br />
+    <button
+      style={{
+        marginTop: "8px",
+        padding: "6px 16px",
+        background: "#517b9d",
+        color: "#fff",
+        border: "none",
+        borderRadius: "4px",
+        cursor: "pointer"
+      }}
+      onClick={() => showTopPost(locationName || "Unknown Location")}
+    >
+      Show Top Post
+    </button>
+    
         </div>
       </Popup>
     </Marker>
@@ -313,7 +338,18 @@ export default function Home() {
 
             </MapContainer>
           </div>
+ {loadingTopPost && <p>Loading top post...</p>}
+  {topPostError && <p style={{ color: "red" }}>{topPostError}</p>}
+  {topPost && (
+    <div style={{ marginTop: "1rem", backgroundColor: "#fff", padding: "1rem", borderRadius: "6px" }}>
+      <h3>Top Post for {topPost.location_name || "Unknown"}</h3>
+      <p><strong>{topPost.title || topPost.text || "No title"}</strong></p>
+      <p>{topPost.text || topPost.content || "No content available."}</p>
+      <small>{topPost.created_at || topPost.ingested_at}</small>
+    </div>
+  )}
 
+        
           <div className="mt-4 flex items-center gap-4 w-full">
             <span className="font-bold text-black text-lg">Heatmap</span>
             <div className="flex-1 h-[27px] rounded-[5px] bg-gradient-to-r from-yellow-300 to-red-600" />
