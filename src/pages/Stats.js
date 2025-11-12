@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchOpenAIResponse } from "../api/fetchKey";
-import { fetchAddressPoints } from "../api/addressPointsApi";
+import { fetchAddressPoints, getContinentFromCoordinates } from "../api/addressPointsApi";
 import ReactMarkdown from 'react-markdown';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { PieChart, Pie, Cell } from 'recharts';
+
 
 export default function Stats() {
 
   const [aiResult, setAiResult] = useState('');
   const [pieData, setPieData] = useState([]);
   const [stackedData, setStackedData] = useState([]);
+  const [continentCounts, setContinentCounts] = useState({});
 
     function classifyDisasterType(type) {
     if (!type) return 'Unknown';
@@ -80,6 +82,20 @@ export default function Stats() {
         dataMap[category][intensity] = (dataMap[category][intensity] || 0) + 1;
       });
       setStackedData(Object.values(dataMap));
+
+      const getContinents = points.map(async (p) => {
+        const lat = p[0];
+        const lng = p[1];
+        const continent = await getContinentFromCoordinates(lat, lng);
+        return continent || 'Unknown';
+      });
+      const continents = await Promise.all(getContinents);
+
+      const counter = {};
+      continents.forEach((cont) => {
+        counter[cont] = (counter[cont] || 0) + 1;
+      });
+      setContinentCounts(counter);
     }
     getData();
   }, []);
@@ -148,6 +164,23 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28FF4'];
           ) : (
             <p className="text-gray-600 mt-10">No intensity data to display.</p>
           )}
+              <h2 className="text-xl font-bold mb-4 text-center">Distribution by Continent</h2>
+  <table className="w-full text-left">
+    <thead>
+      <tr>
+        <th className="px-3 py-2">Continent</th>
+        <th className="px-3 py-2">Disaster Count</th>
+      </tr>
+    </thead>
+    <tbody>
+      {Object.entries(continentCounts).map(([continent, count]) => (
+        <tr key={continent}>
+          <td className="px-3 py-2">{continent}</td>
+          <td className="px-3 py-2">{count}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
         </div>
       </div>
     </div>

@@ -194,3 +194,32 @@ export async function fetchTopPostsByLocation(locationName, { url = DEFAULT_TOP_
     return null;
   }
 }
+
+const OPENCAGE_API_KEY = process.env.REACT_APP_OPENCAGE_KEY || "8d40320b83894c10a74a5911e01b9d0a";
+
+export async function getContinentFromCoordinates(lat, lng, { apiKey = OPENCAGE_API_KEY, timeout = 7000 } = {}) {  
+  if(!apiKey){
+    throw new Error("No OpenCage API key provided");
+  }
+  const url = `https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lng}&key=${apiKey}&no_annotations=1`;
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+    try {
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(id);
+    if (!response.ok) throw new Error(`Geocoding failed: ${response.status}`);
+    const data = await response.json();
+
+    // Parse result, find 'continent' in response
+    const continent = (
+      data.results?.[0]?.components?.continent ||
+      null
+    );
+    return continent;
+  } catch (err) {
+    clearTimeout(id);
+    console.error("Error in getContinentFromCoordinates:", err);
+    return null;
+  }
+}
