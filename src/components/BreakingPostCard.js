@@ -8,6 +8,8 @@ function BreakingPostCard({
   likes,
   score,
   location,
+  lat,
+  lng,
   nearby_records = [],
 }) {
   // 🔹 Background gradient based on severity
@@ -68,7 +70,7 @@ const severityLabel =
         {/* Meta Info */}
         <div className="text-xs text-gray-500 mt-3 space-y-1">
           <div>📍 <span className="font-medium">{location}</span></div>
-          <div>💬 Reposts: {reposts} ❤️ Likes: {likes}</div>
+          <div>💬 Reposts: {reposts} ❤️ Likes: {likes} Lat: {lat} Long: {lng}</div>
 
           {nearby_records.length > 0 && (
             <div>🌐 Nearby: {nearby_records.join(", ")}</div>
