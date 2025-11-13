@@ -223,3 +223,66 @@ export async function getContinentFromCoordinates(lat, lng, { apiKey = OPENCAGE_
     return null;
   }
 }
+
+const DEFAULT_SEARCH_LOCATION_API =
+  process.env.REACT_APP_SEARCH_LOCATION_URL ||
+  "https://8rhqi3yodd.execute-api.us-east-1.amazonaws.com/production/search-location";
+
+export async function fetchSearchLocation(
+  search,
+  { url = DEFAULT_SEARCH_LOCATION_API, timeout = 7000 } = {}
+) {
+  if (!search) {
+    throw new Error("No search parameter provided");
+  }
+
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    // Compose the API endpoint with the query
+    const fullUrl = `${url}?search=${encodeURIComponent(search)}`;
+    const res = await fetch(fullUrl, { signal: controller.signal });
+    clearTimeout(id);
+
+    if (!res.ok) {
+      console.warn("search_location API returned non-OK:", res.status);
+      return null;
+    }
+
+    const data = await res.json();
+
+    // Handle Lambda wrapping { statusCode, body }
+    let payload = data;
+    if (payload && payload.statusCode && payload.body) {
+      try {
+        payload = typeof payload.body === 'string' ? JSON.parse(payload.body) : payload.body;
+      } catch (e) {
+        console.warn('search_location returned non-JSON body:', e);
+        payload = null;
+      }
+    }
+
+    // Expect payload: { search-hit: {lat, lon, location_name}, nearby-records: [...] }
+    if (!payload || !payload["search-hit"]) {
+      return null;
+    }
+    // Coordinates and records available under "search-hit" and "nearby-records"
+    return {
+      coordinates: {
+        lat: payload["search-hit"].lat,
+        lng: payload["search-hit"].lon,
+        locationName: payload["search-hit"].location_name,
+      },
+      nearby: payload["nearby-records"] ?? [],
+    };
+  } catch (err) {
+    clearTimeout(id);
+    if (err.name === "AbortError") {
+      console.warn("search_location API request timed out");
+    } else {
+      console.warn("search_location API request failed:", err);
+    }
+    return null;
+  }
+}

@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { MapContainer, TileLayer, Marker,  Popup } from "react-leaflet";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { MapContainer, TileLayer, Marker,  Popup, useMap } from "react-leaflet";
 import L from 'leaflet';
 import "leaflet/dist/leaflet.css";
 import { addressPoints as staticAddressPoints } from "../addressPoints";
-import { fetchAddressPoints, fetchTopPostsByLocation} from "../api/addressPointsApi";
+import { fetchAddressPoints, fetchTopPostsByLocation, fetchSearchLocation} from "../api/addressPointsApi";
 import { fetchFirstResponders } from "../api/firstRespondersApi";
 import "leaflet.heat";
 import HeatmapLayer from "../components/HeatmapLayer";
@@ -18,8 +18,12 @@ export default function Home() {
   const [responders, setResponders] = useState([]);
   const [responderFilters, setResponderFilters] = useState({ police: true, fire: true, hospital: true, shelter: true });
   const [topPost, setTopPost] = useState(null);
-const [loadingTopPost, setLoadingTopPost] = useState(false);
-const [topPostError, setTopPostError] = useState(null);
+  const [loadingTopPost, setLoadingTopPost] = useState(false);
+  const [topPostError, setTopPostError] = useState(null);
+  const [searchResults, setSearchResults] = useState(null);
+  const [searchError, setSearchError] = useState(null);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const mapRef = useRef(null);
 
   useEffect(() => {
     let mounted = true;
@@ -199,6 +203,67 @@ async function showTopPost(locationName) {
   setLoadingTopPost(false);
 }
 
+async function handleSearchSubmit(e) {
+  if (e.key === "Enter") {
+    setSearchLoading(true);
+    setSearchError(null);
+    setSearchResults(null);
+    try {
+      const result = await fetchSearchLocation(search);
+      if (result) {
+        setSearchResults(result);
+      } else {
+        setSearchError("No results found.");
+      }
+    } catch (err) {
+      setSearchError("Search failed.");
+    }
+    setSearchLoading(false);
+  }
+}
+async function triggerSearch() {
+    if (!search) return;
+
+    setSearchLoading(true);
+    setSearchError(null);
+    setSearchResults(null);
+
+    try {
+      const result = await fetchSearchLocation(search);
+      if (result) {
+        setSearchResults(result);
+
+        // Fly to the searched coordinates on the map
+        if (mapRef.current) {
+          const map = mapRef.current;
+          map.flyTo([result.coordinates.lat, result.coordinates.lng], 10); // zoom level 10 example
+        }
+      } else {
+        setSearchError("No results found.");
+      }
+    } catch (err) {
+      setSearchError("Search failed.");
+    }
+    setSearchLoading(false);
+  }
+
+  async function handleSearchSubmit(e) {
+    if (e.key === "Enter") {
+      await triggerSearch();
+    }
+  }
+  function RecenterMap({ lat, lng, zoom }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (lat && lng) {
+      map.flyTo([lat, lng], zoom || 10);
+    }
+  }, [lat, lng, zoom, map]);
+
+  return null; // This component does not render anything visible
+}
+
   return (
     <div className="bg-[#517b9d] min-h-screen flex flex-col items-center p-6 font-sans">
       <header className="w-full max-w-6xl flex items-center justify-between mb-6">
@@ -216,13 +281,22 @@ async function showTopPost(locationName) {
       <div className="flex items-center bg-white rounded-lg shadow px-3 py-2 w-[400px] mb-4">
         <input
           type="text"
-          placeholder="Search hashtags"
+          placeholder="Search location"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={handleSearchSubmit}
           className="flex-1 outline-none text-gray-700"
         />
-        <span className="text-gray-500 text-lg ml-2">🔍</span>
-      </div>
+        <button
+          onClick={triggerSearch}
+          aria-label="Search"
+          className="ml-2 text-gray-500 text-lg"
+          style={{ cursor: "pointer", background: "none", border: "none" }}
+          title="Search"
+        >
+          🔍
+        </button>
+      </div>  
 
       <div className="text-white mb-4 flex gap-2 items-center">
         <span>Filter by disaster:</span>
@@ -262,7 +336,11 @@ async function showTopPost(locationName) {
         <div className="flex-1 bg-white rounded-xl shadow p-4 flex flex-col items-center w-full">
           {/* larger map: use 90vh or calc to account for header/controls */}
           <div className="w-full h-[90vh] md:h-[80vh] rounded-lg overflow-hidden">
-            <MapContainer center={[32.7767, -96.7970]} zoom={5} className="w-full h-full">
+            <MapContainer center={[39.8283, -98.5795]} zoom={5} className="w-full h-full"
+                whenCreated={(mapInstance) => {
+                  mapRef.current = mapInstance;
+                }}
+              >
               <TileLayer
                 attribution='&copy; <a href="https://carto.com/attributions">CARTO</a> contributors'
                 url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
@@ -335,7 +413,7 @@ async function showTopPost(locationName) {
                   </Popup>
                 </Marker>
               ))}
-
+            {searchResults && <RecenterMap lat={searchResults.coordinates.lat} lng={searchResults.coordinates.lng} zoom={10} />}
             </MapContainer>
           </div>
  {loadingTopPost && <p>Loading top post...</p>}
@@ -348,6 +426,30 @@ async function showTopPost(locationName) {
       <small>{topPost.created_at || topPost.ingested_at}</small>
     </div>
   )}
+  {searchLoading && <p>Searching...</p>}
+
+{searchError && <p style={{ color: "red" }}>{searchError}</p>}
+
+{searchResults && (
+  <div style={{ marginTop: "1rem", padding: "0.5rem", backgroundColor: "#f0f0f0", borderRadius: "6px" }}>
+    <h4>Coordinates:</h4>
+    <p>Lat: {searchResults.coordinates.lat}</p>
+    <p>Lng: {searchResults.coordinates.lng}</p>
+    <p>Location: {searchResults.coordinates.locationName}</p>
+    {searchResults.nearby.length > 0 && (
+      <>
+        <h4>Nearby Records:</h4>
+        <ul>
+          {searchResults.nearby.map((r, i) => (
+            <li key={i}>
+              {r.location_name || `Lat: ${r.lat}, Lng: ${r.lng}`} - Disaster: {r.disaster || "N/A"}
+            </li>
+          ))}
+        </ul>
+      </>
+    )}
+  </div>
+)}
 
         
           <div className="mt-4 flex items-center gap-4 w-full">
