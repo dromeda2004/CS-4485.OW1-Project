@@ -336,11 +336,21 @@ async function triggerSearch() {
         <div className="flex-1 bg-white rounded-xl shadow p-4 flex flex-col items-center w-full">
           {/* larger map: use 90vh or calc to account for header/controls */}
           <div className="w-full h-[90vh] md:h-[80vh] rounded-lg overflow-hidden">
-            <MapContainer center={[39.8283, -98.5795]} zoom={5} className="w-full h-full"
-                whenCreated={(mapInstance) => {
-                  mapRef.current = mapInstance;
-                }}
-              >
+<MapContainer
+  center={[39.8283, -98.5795]}
+  zoom={5}
+  minZoom={3}
+  maxZoom={15}
+  maxBounds={[
+    [-400, -200], // southwest corner - lower bound lat/lng
+    [400, 200] // northeast corner - upper bound lat/lng
+  ]}
+  className="w-full h-full"
+  whenCreated={(mapInstance) => {
+    mapRef.current = mapInstance;
+  }}
+>
+
               <TileLayer
                 attribution='&copy; <a href="https://carto.com/attributions">CARTO</a> contributors'
                 url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
