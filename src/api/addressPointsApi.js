@@ -299,10 +299,13 @@ const DEFAULT_LAMBDA_ARCHIVE_URL = process.env.REACT_APP_HEATMAP_ARCHIVE_URL ||
  * @returns {Promise<{snapshot_date: string, heatmap_archive: object[]}>} archive heatmap data
  */
 export async function fetchHeatmapArchiveElements(snapshotDate = null, timeout = 7000) {
-  const url = new URL(DEFAULT_LAMBDA_ARCHIVE_URL);
-  if (snapshotDate) {
-    url.searchParams.append("snapshot_date", snapshotDate);
+    if (!snapshotDate) {
+    snapshotDate = "2025-10-29";  // or dynamically fetch from an API returning earliest date
   }
+  
+  const url = new URL(DEFAULT_LAMBDA_ARCHIVE_URL);
+  url.searchParams.append("snapshot_date", snapshotDate);
+
 
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);

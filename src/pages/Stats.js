@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchOpenAIResponse } from "../api/fetchKey";
-import { fetchAddressPoints, getContinentFromCoordinates } from "../api/addressPointsApi";
+import { fetchAddressPoints, getContinentFromCoordinates, fetchHeatmapArchiveElements } from "../api/addressPointsApi";
 import ReactMarkdown from 'react-markdown';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { PieChart, Pie, Cell } from 'recharts';
 
 export default function Stats() {
   const [isHistorical, setIsHistorical] = useState(false);
+  const [historicalRows, setHistoricalRows] = useState([]);
   const [aiResult, setAiResult] = useState('');
   const [pieData, setPieData] = useState([]);
   const [stackedData, setStackedData] = useState([]);
@@ -17,6 +18,8 @@ export default function Stats() {
   const [topHotspots, setTopHotspots] = useState([]);
   const [coOccurrenceData, setCoOccurrenceData] = useState([]);
   const [severityPercentiles, setSeverityPercentiles] = useState({});
+  const [selectedSnapshotDate, setSelectedSnapshotDate] = useState("2025-10-29"); // oldest snapshot default
+
 
   function classifyDisasterType(type) {
     if (!type) return 'Unknown';
@@ -44,8 +47,29 @@ export default function Stats() {
   useEffect(() => {
     async function getData() {
       if(isHistorical){
-
-      }else{   
+      const archive = await fetchHeatmapArchiveElements(selectedSnapshotDate);
+const rows = (archive?.heatmap_archive || []).map((item, idx) => ({
+  id: idx + 1,
+  lat: item.lat || item.latitude || '',
+  lng: item.lon || item.lng || item.longitude || '',
+  intensity: item.intensity || item.avg_score || item.weight || 0,
+  type: item.disaster_type || (item.disaster_breakdown ? Object.keys(item.disaster_breakdown)[0] : 'Unknown'),
+  name: item.location_name || '',
+  snapshotDate: selectedSnapshotDate,  // add the snapshot date here per row
+  ...item,
+}));
+      setHistoricalRows(rows);
+      // Clear other states as before
+      setAiResult('');
+      setPieData([]);
+      setStackedData([]);
+      setContinentCounts({});
+      setAvgIntensityByType([]);
+      setImpactByContinent([]);
+      setTopHotspots([]);
+      setCoOccurrenceData([]);
+      setSeverityPercentiles({});
+}else{   
       const { points } = await fetchAddressPoints();
 
       const top = (points || []).slice().sort((a, b) => (b[2] || 0) - (a[2] || 0)).slice(0, 12);
@@ -208,7 +232,7 @@ export default function Stats() {
     }
   }
     getData();
-  }, [isHistorical]);
+  }, [isHistorical, selectedSnapshotDate]);
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28FF4'];
 
@@ -249,6 +273,51 @@ export default function Stats() {
 
         <div className="flex-grow bg-white rounded-lg shadow px-3 py-2 mb-4 flex flex-col items-center overflow-auto">
           {/* Charts and tables omitted - previous ones go here unchanged */}
+          {isHistorical ? (
+            <div className="w-full max-w-5xl bg-white rounded-lg shadow px-3 py-2 mx-auto mt-8">
+        <div className="mb-4">
+      <label htmlFor="snapshotDate" className="text-gray-800 font-semibold mr-2">Select Snapshot Date:</label>
+      <input
+        id="snapshotDate"
+        type="date"
+        value={selectedSnapshotDate}
+        onChange={(e) => setSelectedSnapshotDate(e.target.value)}
+        className="px-2 py-1 border rounded"
+        max={new Date().toISOString().split("T")[0]} // prevent future dates
+      />
+    </div>          
+    <h2 className="text-3xl font-bold mb-6 text-center">Historical Data Snapshot</h2>
+    <table className="w-full text-left border-collapse border border-gray-300 mb-6">
+      <thead>
+        <tr>
+          <th className="border border-gray-300 px-3 py-2">#</th>
+          <th className="border border-gray-300 px-3 py-2">Date</th> {/* New Date column */}
+          <th className="border border-gray-300 px-3 py-2">Latitude</th>
+          <th className="border border-gray-300 px-3 py-2">Longitude</th>
+          <th className="border border-gray-300 px-3 py-2">Intensity</th>
+          <th className="border border-gray-300 px-3 py-2">Type</th>
+          <th className="border border-gray-300 px-3 py-2">Name</th>
+        </tr>
+      </thead>
+      <tbody>
+        {historicalRows.map(row => (
+          <tr key={row.id}>
+            <td className="border border-gray-300 px-3 py-2">{row.id}</td>
+<td className="border border-gray-300 px-3 py-2">
+  {row.snapshotDate ? new Date(row.snapshotDate).toLocaleDateString() : 'Unknown'}
+</td>
+            <td className="border border-gray-300 px-3 py-2">{row.lat}</td>
+            <td className="border border-gray-300 px-3 py-2">{row.lng}</td>
+            <td className="border border-gray-300 px-3 py-2">{row.intensity}</td>
+            <td className="border border-gray-300 px-3 py-2">{row.type}</td>
+            <td className="border border-gray-300 px-3 py-2">{row.name}</td>
+          </tr>
+            ))}
+      </tbody>
+    </table>
+  </div>
+          ) : (
+            <>
           <h2 className="text-2xl font-bold mb-4 text-center">Disaster Type Distribution</h2>
           {pieData.length ? (
             <PieChart width={400} height={400}>
@@ -395,6 +464,9 @@ export default function Stats() {
             </div>
           ) : (
             <p className="text-gray-600 text-center">Loading severity percentiles...</p>
+            
+          )}
+          </>
           )}
         </div>
       </div>
