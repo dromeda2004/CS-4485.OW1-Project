@@ -286,3 +286,54 @@ export async function fetchSearchLocation(
     return null;
   }
 }
+
+// api/heatmapArchiveApi.js
+
+const DEFAULT_LAMBDA_ARCHIVE_URL = process.env.REACT_APP_HEATMAP_ARCHIVE_URL || 
+  "https://8rhqi3yodd.execute-api.us-east-1.amazonaws.com/production/heatmap/archive";
+
+/**
+ * Fetch archived heatmap snapshot data from AWS Lambda
+ * @param {string} snapshotDate - optional date string filter, e.g. "2023-11-01"
+ * @param {number} timeout - request timeout in milliseconds (default 7000)
+ * @returns {Promise<{snapshot_date: string, heatmap_archive: object[]}>} archive heatmap data
+ */
+export async function fetchHeatmapArchiveElements(snapshotDate = null, timeout = 7000) {
+  const url = new URL(DEFAULT_LAMBDA_ARCHIVE_URL);
+  if (snapshotDate) {
+    url.searchParams.append("snapshot_date", snapshotDate);
+  }
+
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url.toString(), { signal: controller.signal });
+    clearTimeout(id);
+
+    if (!response.ok) {
+      console.warn("Heatmap archive API returned non-OK status:", response.status);
+      return null;
+    }
+
+    const data = await response.json();
+
+    if (data && data.statusCode && data.body) {
+      try {
+        return JSON.parse(data.body);
+      } catch (e) {
+        console.warn("Heatmap archive API returned invalid JSON body:", e);
+        return null;
+      }
+    }
+    return data;
+  } catch (err) {
+    clearTimeout(id);
+    if (err.name === "AbortError") {
+      console.warn("Heatmap archive API request timed out");
+    } else {
+      console.error("Heatmap archive API request failed:", err);
+    }
+    return null;
+  }
+}
