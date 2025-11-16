@@ -70,7 +70,7 @@ const severityLabel =
         {/* Meta Info */}
         <div className="text-xs text-gray-500 mt-3 space-y-1">
           <div>📍 <span className="font-medium">{location}</span></div>
-          <div>💬 Reposts: {reposts} ❤️ Likes: {likes} Lat: {lat} Long: {lng}</div>
+          <div>💬 Reposts: {reposts} ❤️ Likes: {likes} </div>
 
           {nearby_records.length > 0 && (
             <div>🌐 Nearby: {nearby_records.join(", ")}</div>

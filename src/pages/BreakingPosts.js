@@ -8,6 +8,7 @@ export default function DisasterTracker() {
   const [posts, setPosts] = useState([]);
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
+  const [sortMode, setSortMode] = useState("recent");
   const [userLocation, setUserLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
 
@@ -106,19 +107,37 @@ export default function DisasterTracker() {
       <Searchbar search={search} setSearch={setSearch} />
 
       {/* Filter dropdown */}
-      <select
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
-        className="mb-6 px-4 py-2 rounded-lg"
-      >
-        <option>All</option>
-        <option>Storm</option>
-        <option>Tornado</option>
-        <option>Flood</option>
-        <option>Tsunamis</option>
-        <option>Earthquake</option>
-        <option>Wildfires</option>
-      </select>
+      <div className="flex gap-4 mb-6">
+  {/* Category Filter */}
+  <select
+    value={filter}
+    onChange={(e) => setFilter(e.target.value)}
+    className="px-4 py-2 rounded-lg"
+  >
+    <option>All</option>
+    <option>Storm</option>
+    <option>Tornado</option>
+    <option>Flood</option>
+    <option>Tsunamis</option>
+    <option>Earthquake</option>
+    <option>Wildfires</option>
+  </select>
+
+  {/* Sorting Filter */}
+  <select
+    value={sortMode}
+    onChange={(e) => setSortMode(e.target.value)}
+    className="px-4 py-2 rounded-lg"
+  >
+    <option value="recent">Recent</option>
+    <option value="score_recent">Severity + Recent</option>
+    <option value="popular">Popular</option>
+    <option value="score">Severity</option>
+    <option value="nearest" disabled={!userLocation}>
+      Nearest
+    </option>
+  </select>
+</div>
 
       {/* Location status */}
       <div className="text-white text-sm mb-4">
@@ -135,7 +154,13 @@ export default function DisasterTracker() {
       </div>
 
       {/* Updated posts with location-aware sorting */}
-      <BreakingPostList posts={filteredPosts} userLocation={userLocation} />
+     <BreakingPostList
+  posts={filteredPosts}
+  userLocation={userLocation}
+  sortMode={sortMode}
+  setSortMode={setSortMode}
+/>
+
     </div>
   );
 }

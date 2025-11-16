@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from "react";
 import BreakingPostCard from "./BreakingPostCard";
 
-function BreakingPostList({ posts, userLocation }) {
-  const [sortMode, setSortMode] = useState("recent"); // "recent" | "popular" | "score" | "score_recent" | "nearest"
+function BreakingPostList({ posts, userLocation, sortMode, setSortMode }) {
+
+  //const [sortMode, setSortMode] = useState("recent"); // "recent" | "popular" | "score" | "score_recent" | "nearest"
 
   // 🔹 Haversine distance function
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -59,6 +60,7 @@ function BreakingPostList({ posts, userLocation }) {
   const toggleLabel = toggleLabelMap[sortMode];
 
   // 🔹 Cycle through sorting modes
+  /*
   const handleToggle = () => {
     if (sortMode === "recent") setSortMode("score_recent");
     else if (sortMode === "score_recent") setSortMode("popular");
@@ -66,10 +68,12 @@ function BreakingPostList({ posts, userLocation }) {
     else if (sortMode === "score") setSortMode("nearest");
     else setSortMode("recent");
   };
-
+*/
   return (
+    
     <div className="bg-white w-full max-w-6xl rounded-xl shadow p-6">
-      <div className="flex items-center justify-between mb-4">
+    
+      {/*<div className="flex items-center justify-between mb-4">
         <h2 className="font-semibold text-lg">Breaking Posts</h2>
         <button
           onClick={handleToggle}
@@ -77,15 +81,18 @@ function BreakingPostList({ posts, userLocation }) {
         >
           {toggleLabel}
         </button>
-      </div>
+      </div>*/}
+      
 
-      <div className="flex flex-wrap gap-4 justify-between">
-        {sortedPosts.map((post) => (
-          <div key={post.id} className="w-[48%]">
-            <BreakingPostCard {...post} />
-          </div>
-        ))}
-      </div>
+<div className="columns-1 sm:columns-2 gap-4">
+  {sortedPosts.map((post) => (
+    <div key={post.id} className="break-inside-avoid mb-4">
+      <BreakingPostCard {...post} />
+    </div>
+  ))}
+</div>
+
+
 
       <button className="w-full text-center text-sm text-blue-600 mt-4 py-2 hover:underline">
         See All
