@@ -103,6 +103,12 @@ export default function DisasterTracker() {
         </nav>
       </header>
 
+              <div className="text-center mb-16">
+          <h1 className="text-5xl font-bold text-white mb-4">Breaking Posts</h1>
+          <p className="text-xl text-white/90 max-w-3xl mx-auto leading-relaxed">
+            Breaking posts about current disasters and emergencies worldwide. Use the filters below to sort by severity, location, or time to stay informed about what matters most.
+          </p>
+        </div>
       {/* Search bar */}
       <Searchbar search={search} setSearch={setSearch} />
 
