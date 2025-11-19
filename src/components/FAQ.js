@@ -68,7 +68,7 @@ export default function FAQ() {
       <div className="mt-12 text-center">
         <h3 className="text-xl font-semibold text-gray-800 mb-2">Need more insight?</h3>
         <p className="text-gray-600 mb-4">
-          Explore BlueSky's Documnetation for more information
+          Explore BlueSky's Documentation for more information
         </p>
         <button className="px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700">
           Click Here
