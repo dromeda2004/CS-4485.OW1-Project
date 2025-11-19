@@ -426,16 +426,48 @@ async function triggerSearch() {
             {searchResults && <RecenterMap lat={searchResults.coordinates.lat} lng={searchResults.coordinates.lng} zoom={10} />}
             </MapContainer>
           </div>
- {loadingTopPost && <p>Loading top post...</p>}
-  {topPostError && <p style={{ color: "red" }}>{topPostError}</p>}
+  {loadingTopPost && (<p className="text-sm gap-2 text-gray-500 animate-pulse">Loading top posts…</p>)}
+
+
+  {topPostError && (<p className="text-sm text-red-500">{topPostError}</p>)}
+
   {topPost && (
-    <div style={{ marginTop: "1rem", backgroundColor: "#fff", padding: "1rem", borderRadius: "6px" }}>
-      <h3>Top Post for {topPost.location_name || "Unknown"}</h3>
-      <p><strong>{topPost.title || topPost.text || "No title"}</strong></p>
-      <p>{topPost.text || topPost.content || "No content available."}</p>
-      <small>{topPost.created_at || topPost.ingested_at}</small>
-    </div>
+    (() => {
+      let title = topPost?.title || topPost?.text || "No title";
+      let body = topPost?.text || topPost?.content || "No content available";
+      let showBody = title?.trim() !== body?.trim();
+
+      return (
+        <div className="mt-4 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="bg-gradient-to-r from-[#517b9d] to-[#2f4f67] text-white px-4 py-3 flex justify-between items-center">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <span>🔥</span> Top Post
+            </h3>
+            <span className="text-xs bg-white/20 backdrop-blur px-2 py-1 rounded-full">
+              {topPost.location_name || "Unknown"}
+            </span>
+          </div>
+
+          <div className="p-4">
+            <h2 className="text-lg font-bold text-gray-900 mb-3 leading-snug">
+              {title}
+            </h2>
+
+            {showBody && (
+              <p className="text-gray-800 text-base leading-relaxed mb-4">
+                {body}
+              </p>
+            )}
+
+            <p className="text-xs text-gray-600 italic">
+              Posted: {topPost.created_at || topPost.ingested_at}
+            </p>
+          </div>
+        </div>
+      );
+    })()
   )}
+
   {searchLoading && <p>Searching...</p>}
 
 {searchError && <p style={{ color: "red" }}>{searchError}</p>}
