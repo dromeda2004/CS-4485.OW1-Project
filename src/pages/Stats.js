@@ -28,13 +28,17 @@ export default function Stats() {
           id: idx + 1,
           lat: item.lat || item.latitude || "",
           lng: item.lon || item.lng || item.longitude || "",
-          intensity: (item.intensity || item.avg_score || item.weight || 0) * 100,
+          intensity: (item.intensity || item.avg_score || item.weight || 0),
           type: item.disaster_type || (item.disaster_breakdown ? Object.keys(item.disaster_breakdown)[0] : "Unknown"),
           name: item.location_name || "",
           snapshotDate: selectedSnapshotDate,
           ...item,
         }));
-        setHistoricalRows(rows);
+        const scaledRows = rows.map(row => ({
+          ...row,
+          intensity: row.intensity * 100,
+        }));
+        setHistoricalRows(scaledRows);
         setAiResult("");
         setLivePoints([]); // Clear live points
       } else {
