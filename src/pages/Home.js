@@ -426,7 +426,7 @@ async function triggerSearch() {
             {searchResults && <RecenterMap lat={searchResults.coordinates.lat} lng={searchResults.coordinates.lng} zoom={10} />}
             </MapContainer>
           </div>
-  {loadingTopPost && (<p className="text-sm gap-2 text-gray-500 animate-pulse">Loading top posts…</p>)}
+  {loadingTopPost && (<p className="text-sm mt-2 text-gray-500 animate-pulse">Loading top posts…</p>)}
 
 
   {topPostError && (<p className="text-sm text-red-500">{topPostError}</p>)}
@@ -468,9 +468,14 @@ async function triggerSearch() {
     })()
   )}
 
-  {searchLoading && <p>Searching...</p>}
+  {searchLoading && <p className="text-sm mt-2 text-gray-500 animate-pulse">Searching...</p>}
 
-{searchError && <p style={{ color: "red" }}>{searchError}</p>}
+{searchError && (
+  <div className="mt-2 bg-red-50 border border-red-300 text-red-700 text-sm px-3 py-2 rounded">
+    {searchError}
+  </div>
+)}
+
 
 {searchResults && (
   <div style={{ marginTop: "1rem", padding: "0.5rem", backgroundColor: "#f0f0f0", borderRadius: "6px" }}>

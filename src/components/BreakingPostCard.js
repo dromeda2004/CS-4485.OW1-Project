@@ -56,9 +56,9 @@ const severityLabel =
               ${
                 score >= 200
                   ? "bg-red-200 text-red-800"
-                  : score === 100
+                  : score >= 100
                   ? "bg-orange-200 text-orange-800"
-                  : score === 50
+                  : score >= 50
                   ? "bg-yellow-200 text-yellow-800"
                   : "bg-green-200 text-green-800"
               }`}
