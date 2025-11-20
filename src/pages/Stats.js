@@ -7,6 +7,43 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "rec
 import { PieChart, Pie, Cell } from "recharts";
 import { useDisasterStats } from "../components/useDisasterStats"; // Adjust path as needed
 
+function TopIntensityTable({ points, isHistorical }) {
+  const top10 = [...points]
+    .sort((a, b) => (b[2] || 0) - (a[2] || 0))
+    .slice(0, 10);
+      return (
+    <div className="w-full bg-white rounded-lg shadow px-3 py-2 mb-6">
+      <h2 className="text-2xl font-bold mb-4 text-center">
+        Top 10 Highest Intensity Disasters {isHistorical ? "(Historical)" : "(Live)"}
+      </h2>
+      {top10.length === 0 ? (
+        <p className="text-gray-600 text-center">No data available.</p>
+      ) : (
+        <table className="w-full text-left border-collapse border border-gray-300">
+          <thead>
+            <tr>
+              <th className="border border-gray-300 px-3 py-2">Location</th>
+              <th className="border border-gray-300 px-3 py-2">Intensity</th>
+              <th className="border border-gray-300 px-3 py-2">Disaster Type</th>
+              <th className="border border-gray-300 px-3 py-2">Coordinates</th>
+            </tr>
+          </thead>
+          <tbody>
+            {top10.map((p, idx) => (
+              <tr key={idx}>
+                <td className="border border-gray-300 px-3 py-2">{p[4] || "Unknown"}</td>
+                <td className="border border-gray-300 px-3 py-2">{Math.round(p[2] || 0)}</td>
+                <td className="border border-gray-300 px-3 py-2">{p[3] || "Unknown"}</td>
+                <td className="border border-gray-300 px-3 py-2">{p[0].toFixed(4)}, {p[1].toFixed(4)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
 export default function Stats() {
   const [isHistorical, setIsHistorical] = useState(false);
   const [historicalRows, setHistoricalRows] = useState([]);
@@ -22,26 +59,21 @@ export default function Stats() {
 
   useEffect(() => {
     async function getData() {
-      if (isHistorical) {
-        const archive = await fetchHeatmapArchiveElements(selectedSnapshotDate);
-        const rows = (archive?.heatmap_archive || []).map((item, idx) => ({
-          id: idx + 1,
-          lat: item.lat || item.latitude || "",
-          lng: item.lon || item.lng || item.longitude || "",
-          intensity: (item.intensity || item.avg_score || item.weight || 0),
-          type: item.disaster_type || (item.disaster_breakdown ? Object.keys(item.disaster_breakdown)[0] : "Unknown"),
-          name: item.location_name || "",
-          snapshotDate: selectedSnapshotDate,
-          ...item,
-        }));
-        const scaledRows = rows.map(row => ({
-          ...row,
-          intensity: row.intensity * 100,
-        }));
-        setHistoricalRows(scaledRows);
-        setAiResult("");
-        setLivePoints([]); // Clear live points
-      } else {
+if (isHistorical) {
+  const archive = await fetchHeatmapArchiveElements(selectedSnapshotDate);
+  const rows = (archive?.points || []).map((p, idx) => ({
+    id: idx + 1,
+    lat: p[0],
+    lng: p[1],
+    intensity: p[2],
+    type: p[3] || "Unknown",
+    name: p[4] || "",
+    snapshotDate: archive.snapshot_date,
+  }));
+  setHistoricalRows(rows);
+  setAiResult("");
+  setLivePoints([]);
+} else {
         const { points } = await fetchAddressPoints();
         setLivePoints(points || []);
         setHistoricalRows([]); // Clear historical rows
@@ -484,6 +516,7 @@ export default function Stats() {
               )}
             </>
           )}
+          <TopIntensityTable points={points} isHistorical={isHistorical} />
         </div>
       </div>
     </div>

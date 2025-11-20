@@ -3,6 +3,8 @@ import { addressPoints as staticPoints } from "../addressPoints";
 // Normalizes various possible server responses into the expected shape:
 // Array of [lat, lng, weight]
 function normalizePoints(data) {
+  
+
   if (!Array.isArray(data)) return [];
 
   return data.map((p) => {
@@ -197,25 +199,36 @@ export async function fetchTopPostsByLocation(locationName, { url = DEFAULT_TOP_
 
 const OPENCAGE_API_KEY = process.env.REACT_APP_OPENCAGE_KEY || "8d40320b83894c10a74a5911e01b9d0a";
 
-export async function getContinentFromCoordinates(lat, lng, { apiKey = OPENCAGE_API_KEY, timeout = 7000 } = {}) {  
-  if(!apiKey){
+
+export async function getContinentFromCoordinates(lat, lng, { apiKey = OPENCAGE_API_KEY, timeout = 7000 } = {}) {
+  if (!apiKey) {
     throw new Error("No OpenCage API key provided");
   }
+
+  // Round lat/lng to 3 decimal places to group nearby coords
+  const cacheKey = `${lat.toFixed(3)},${lng.toFixed(3)}`;
+  if (continentCache.has(cacheKey)) {
+    return continentCache.get(cacheKey);
+  }
+
   const url = `https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lng}&key=${apiKey}&no_annotations=1`;
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
 
-    try {
+  try {
     const response = await fetch(url, { signal: controller.signal });
     clearTimeout(id);
     if (!response.ok) throw new Error(`Geocoding failed: ${response.status}`);
     const data = await response.json();
 
-    // Parse result, find 'continent' in response
-    const continent = (
-      data.results?.[0]?.components?.continent ||
-      null
-    );
+    // Extract continent from response
+    const continent = data.results?.[0]?.components?.continent || null;
+
+    // Cache the result for future calls
+    if (continent) {
+      continentCache.set(cacheKey, continent);
+    }
+
     return continent;
   } catch (err) {
     clearTimeout(id);
@@ -228,6 +241,7 @@ const DEFAULT_SEARCH_LOCATION_API =
   process.env.REACT_APP_SEARCH_LOCATION_URL ||
   "https://8rhqi3yodd.execute-api.us-east-1.amazonaws.com/production/search-location";
 
+  const continentCache = new Map();
 export async function fetchSearchLocation(
   search,
   { url = DEFAULT_SEARCH_LOCATION_API, timeout = 7000 } = {}
@@ -292,12 +306,29 @@ export async function fetchSearchLocation(
 const DEFAULT_LAMBDA_ARCHIVE_URL = process.env.REACT_APP_HEATMAP_ARCHIVE_URL || 
   "https://8rhqi3yodd.execute-api.us-east-1.amazonaws.com/production/heatmap/archive";
 
-/**
- * Fetch archived heatmap snapshot data from AWS Lambda
- * @param {string} snapshotDate - optional date string filter, e.g. "2023-11-01"
- * @param {number} timeout - request timeout in milliseconds (default 7000)
- * @returns {Promise<{snapshot_date: string, heatmap_archive: object[]}>} archive heatmap data
- */
+function normalizeArchivePoints(data) {
+  if (!data || !Array.isArray(data.heatmap_archive)) return [];
+
+  return data.heatmap_archive.map((loc) => {
+    const lat = Number(loc.lat ?? loc.latitude ?? 0);
+    const lng = Number(loc.lon ?? loc.lng ?? loc.longitude ?? 0);
+    const rawScore = Number(loc.intensity ?? loc.weight ?? loc.avg_score ?? 0) || 0;
+    const weight = Math.round(Math.max(1, rawScore * 100));
+    const name = loc.location_name ?? "Unknown Location";
+
+    let disasterType = undefined;
+    const breakdown = loc.disaster_breakdown || {};
+    if (breakdown && typeof breakdown === "object") {
+      const entries = Object.entries(breakdown);
+      if (entries.length > 0) {
+        entries.sort((a, b) => b[1] - a[1]);
+        disasterType = entries[0][0];
+      }
+    }
+
+    return [lat, lng, weight, disasterType, name];
+  });
+}
 export async function fetchHeatmapArchiveElements(snapshotDate = null, timeout = 7000) {
     if (!snapshotDate) {
     snapshotDate = "2025-10-29";  // or dynamically fetch from an API returning earliest date
@@ -329,7 +360,12 @@ export async function fetchHeatmapArchiveElements(snapshotDate = null, timeout =
         return null;
       }
     }
-    return data;
+    const points = normalizeArchivePoints(data);
+    return {
+      snapshot_date: snapshotDate,
+      points,
+      source: "archive"
+    };
   } catch (err) {
     clearTimeout(id);
     if (err.name === "AbortError") {
