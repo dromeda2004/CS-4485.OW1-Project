@@ -25,7 +25,6 @@ function TopIntensityTable({ points, isHistorical }) {
               <th className="border border-gray-300 px-3 py-2">Location</th>
               <th className="border border-gray-300 px-3 py-2">Intensity</th>
               <th className="border border-gray-300 px-3 py-2">Disaster Type</th>
-              <th className="border border-gray-300 px-3 py-2">Coordinates</th>
             </tr>
           </thead>
           <tbody>
@@ -34,7 +33,6 @@ function TopIntensityTable({ points, isHistorical }) {
                 <td className="border border-gray-300 px-3 py-2">{p[4] || "Unknown"}</td>
                 <td className="border border-gray-300 px-3 py-2">{Math.round(p[2] || 0)}</td>
                 <td className="border border-gray-300 px-3 py-2">{p[3] || "Unknown"}</td>
-                <td className="border border-gray-300 px-3 py-2">{p[0].toFixed(4)}, {p[1].toFixed(4)}</td>
               </tr>
             ))}
           </tbody>
@@ -286,30 +284,6 @@ if (isHistorical) {
                 <p className="text-gray-600 text-center">Loading continent impact data...</p>
               )}
 
-              <h2 className="text-2xl font-bold my-6 text-center">Top Disaster Hotspots</h2>
-              {topHotspots.length ? (
-                <table className="w-full text-left border-collapse border border-gray-300 mb-6">
-                  <thead>
-                    <tr>
-                      <th className="border border-gray-300 px-3 py-2">Location</th>
-                      <th className="border border-gray-300 px-3 py-2">Disaster Count</th>
-                      <th className="border border-gray-300 px-3 py-2">Total Intensity</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {topHotspots.map(({ location, count, totalIntensity }) => (
-                      <tr key={location}>
-                        <td className="border border-gray-300 px-3 py-2">{location}</td>
-                        <td className="border border-gray-300 px-3 py-2">{count}</td>
-                        <td className="border border-gray-300 px-3 py-2">{totalIntensity.toFixed(2)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <p className="text-gray-600 text-center">Loading hotspots...</p>
-              )}
-
               <h2 className="text-xl font-bold mb-4 text-center">Distribution by Continent</h2>
               <table className="w-full text-left">
                 <thead>
@@ -437,29 +411,6 @@ if (isHistorical) {
                 <p className="text-gray-600 text-center">Loading continent impact data...</p>
               )}
 
-              <h2 className="text-2xl font-bold my-6 text-center">Top Disaster Hotspots</h2>
-              {topHotspots.length ? (
-                <table className="w-full text-left border-collapse border border-gray-300 mb-6">
-                  <thead>
-                    <tr>
-                      <th className="border border-gray-300 px-3 py-2">Location</th>
-                      <th className="border border-gray-300 px-3 py-2">Disaster Count</th>
-                      <th className="border border-gray-300 px-3 py-2">Total Intensity</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {topHotspots.map(({ location, count, totalIntensity }) => (
-                      <tr key={location}>
-                        <td className="border border-gray-300 px-3 py-2">{location}</td>
-                        <td className="border border-gray-300 px-3 py-2">{count}</td>
-                        <td className="border border-gray-300 px-3 py-2">{totalIntensity.toFixed(2)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <p className="text-gray-600 text-center">Loading hotspots...</p>
-              )}
 
               <h2 className="text-xl font-bold mb-4 text-center">Distribution by Continent</h2>
               <table className="w-full text-left">
