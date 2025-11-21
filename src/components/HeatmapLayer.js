@@ -10,13 +10,31 @@ export default function HeatmapLayer({ points = [], options = {} }) {
     if (!map || !window.L) return;
 
     // create the heat layer and add to map
-    const heatLayer = window.L.heatLayer(points, options).addTo(map);
+    const heat = window.L.heatLayer(points, options).addTo(map);
+
+    // Force update on drag to prevent empty areas, throttled by RAF (so it doesn't lag hella)
+    let frame = null;
+    const onMove = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        if (heat._reset) {
+          heat._reset();
+        }
+        frame = null;
+      });
+    };
+
+    map.on("move", onMove);
 
     return () => {
-      if (map && heatLayer) map.removeLayer(heatLayer);
+      map.off("move", onMove);
+      if (frame) {
+        cancelAnimationFrame(frame);
+      }
+      map.removeLayer(heat);
     };
     // stringify arrays so effect runs when points/options change
-  }, [map, JSON.stringify(points), JSON.stringify(options)]);
+  }, [map, points, options]);
 
   return null;
 }
