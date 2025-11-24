@@ -616,34 +616,59 @@ export default function Home() {
             </div>
           )}
 
-          {searchResults && (
-            <div
-              style={{
-                marginTop: "1rem",
-                padding: "0.5rem",
-                backgroundColor: "#f0f0f0",
-                borderRadius: "6px",
-              }}
-            >
-              <h4>Coordinates:</h4>
-              <p>Lat: {searchResults.coordinates.lat}</p>
-              <p>Lng: {searchResults.coordinates.lng}</p>
-              <p>Location: {searchResults.coordinates.locationName}</p>
-              {searchResults.nearby.length > 0 && (
-                <>
-                  <h4>Nearby Records:</h4>
-                  <ul>
-                    {searchResults.nearby.map((r, i) => (
-                      <li key={i}>
-                        {r.location_name || `Lat: ${r.lat}, Lng: ${r.lng}`} -
-                        Disaster: {r.disaster || "N/A"}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-            </div>
-          )}
+{searchResults && (
+  <div className="mt-4 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+
+    {/* Header */}
+    <div className="bg-gradient-to-r from-[#2f4f67] to-[#517b9d] text-white px-4 py-3">
+      <h3 className="text-lg font-semibold flex items-center gap-2">
+        📍 Search Result
+      </h3>
+    </div>
+
+    {/* Body */}
+    <div className="p-4 space-y-3">
+      <div>
+        <h4 className="font-semibold text-gray-800 mb-1">Coordinates</h4>
+        <p className="text-sm text-gray-700">
+          <span className="font-medium">Lat:</span> {searchResults.coordinates.lat}
+        </p>
+        <p className="text-sm text-gray-700">
+          <span className="font-medium">Lng:</span> {searchResults.coordinates.lng}
+        </p>
+        <p className="text-sm text-gray-700">
+          <span className="font-medium">Location:</span> {searchResults.coordinates.locationName}
+        </p>
+      </div>
+
+      {/* Nearby Section */}
+      {searchResults.nearby.length > 0 && (
+        <div>
+          <h4 className="font-semibold text-gray-800 mb-2">Nearby Records</h4>
+
+          <ul className="space-y-2">
+            {searchResults.nearby.map((r, i) => (
+              <li
+                key={i}
+                className="flex justify-between items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              >
+                <span className="font-medium text-gray-700">
+                  {r.location_name || `Lat: ${r.lat}, Lng: ${r.lng}`}
+                </span>
+
+                <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
+                  {r.disaster || "N/A"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  </div>
+)}
+
+
 
           <div className="mt-4 flex items-center gap-4 w-full">
             <span className="font-bold text-black text-lg">Heatmap</span>
