@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { getContinentFromCoordinates } from "../api/addressPointsApi"; // your API function
+import { getContinentFromCoordinates, aggregateStatsByContinent } from "../api/addressPointsApi"; // your API function
 
 export function useDisasterStats(points) {
 
@@ -29,40 +29,31 @@ export function useDisasterStats(points) {
     if (weight < 10000) return "Medium";
     return "High";
   }
-  useEffect(() => {
-    async function computeContinents() {
-      if (!points.length) {
-        setContinentStats({ continentCounts: {}, impactByContinent: [] });
-        return;
-      }
-
-      // Perform continent lookups for each point
-      const continents = await Promise.all(
-        points.map(async ([lat, lng]) => {
-          // This should be your geocoding API
-          return await getContinentFromCoordinates(lat, lng);
-        })
-      );
-
-      const counts = {};
-      const intensitySums = {};
-
-      continents.forEach((continent, i) => {
-        if (!continent) continent = "Unknown";
-        counts[continent] = (counts[continent] || 0) + 1;
-        intensitySums[continent] = (intensitySums[continent] || 0) + (points[i][2] || 0);
-      });
-
-      const impactByContinent = Object.entries(counts).map(([continent, count]) => ({
-        continent,
-        totalIntensity: intensitySums[continent],
-        averageIntensity: count ? intensitySums[continent] / count : 0,
-      }));
-
-      setContinentStats({ continentCounts: counts, impactByContinent });
+useEffect(() => {
+  async function computeContinents() {
+    if (!points.length) {
+      setContinentStats({ continentCounts: {}, impactByContinent: [] });
+      return;
     }
-    computeContinents();
-  }, [points]);
+
+    const agg = await aggregateStatsByContinent(points);
+
+    const continentCounts = {};
+    agg.forEach(({ continent, count }) => {
+      continentCounts[continent] = count;
+    });
+
+    const impactByContinent = agg.map(({ continent, totalIntensity, averageIntensity }) => ({
+      continent,
+      totalIntensity,
+      averageIntensity,
+    }));
+
+    setContinentStats({ continentCounts, impactByContinent });
+  }
+  computeContinents();
+}, [points]);
+
 
   return useMemo(() => {
     if (!points || points.length === 0) {

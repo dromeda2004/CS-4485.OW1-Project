@@ -242,6 +242,33 @@ const DEFAULT_SEARCH_LOCATION_API =
   "https://8rhqi3yodd.execute-api.us-east-1.amazonaws.com/production/search-location";
 
   const continentCache = new Map();
+export async function aggregateStatsByContinent(points) {
+  const aggregation = {};
+
+  for (const [lat, lng, intensity] of points) {
+    const key = `${lat.toFixed(3)},${lng.toFixed(3)}`;
+    let continent = continentCache.get(key);
+
+    if (!continent) {
+      continent = await getContinentFromCoordinates(lat, lng);
+      continentCache.set(key, continent || 'Unknown');
+    }
+
+    if (!aggregation[continent]) {
+      aggregation[continent] = { disasterCount: 0, totalIntensity: 0 };
+    }
+
+    aggregation[continent].disasterCount++;
+    aggregation[continent].totalIntensity += intensity || 0;
+  }
+
+  return Object.entries(aggregation).map(([continent, stats]) => ({
+    continent,
+    disasterCount: stats.disasterCount,
+    totalIntensity: stats.totalIntensity,
+    averageIntensity: stats.disasterCount > 0 ? stats.totalIntensity / stats.disasterCount : 0,
+  }));
+}  
 export async function fetchSearchLocation(
   search,
   { url = DEFAULT_SEARCH_LOCATION_API, timeout = 7000 } = {}

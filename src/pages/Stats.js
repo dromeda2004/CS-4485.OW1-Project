@@ -11,7 +11,7 @@ function TopIntensityTable({ points, isHistorical }) {
   const top10 = [...points]
     .sort((a, b) => (b[2] || 0) - (a[2] || 0))
     .slice(0, 10);
-      return (
+  return (
     <div className="w-full bg-white rounded-lg shadow px-3 py-2 mb-6">
       <h2 className="text-2xl font-bold mb-4 text-center">
         Top 10 Highest Intensity Disasters {isHistorical ? "(Historical)" : "(Live)"}
@@ -57,26 +57,26 @@ export default function Stats() {
 
   useEffect(() => {
     async function getData() {
-if (isHistorical) {
-  const archive = await fetchHeatmapArchiveElements(selectedSnapshotDate);
-  const rows = (archive?.points || []).map((p, idx) => ({
-    id: idx + 1,
-    lat: p[0],
-    lng: p[1],
-    intensity: p[2],
-    type: p[3] || "Unknown",
-    name: p[4] || "",
-    snapshotDate: archive.snapshot_date,
-  }));
-  setHistoricalRows(rows);
-  setAiResult("");
-  setLivePoints([]);
-} else {
+      if (isHistorical) {
+        const archive = await fetchHeatmapArchiveElements(selectedSnapshotDate);
+        const rows = (archive?.points || []).map((p, idx) => ({
+          id: idx + 1,
+          lat: p[0],
+          lng: p[1],
+          intensity: p[2],
+          type: p[3] || "Unknown",
+          name: p[4] || "",
+          snapshotDate: archive.snapshot_date,
+        }));
+        setHistoricalRows(rows);
+        setAiResult("");
+        setLivePoints([]);
+      } else {
         const { points } = await fetchAddressPoints();
         setLivePoints(points || []);
         setHistoricalRows([]); // Clear historical rows
 
-        // AI summary preparation
+        // AI summary preparation (only for live data)
         const top = (points || [])
           .slice()
           .sort((a, b) => (b[2] || 0) - (a[2] || 0))
@@ -101,8 +101,12 @@ if (isHistorical) {
           .join("\n");
 
         const prompt = `You are an assistant that summarizes disaster heatmap data for emergency managers.\n\nCounts by type: ${countsLine}\n\nTop hotspots (by intensity):\n${hotspotLines}\n\nTask: In 100 words, summarize the current situation. Use only the data provided.`;
-        const result = await fetchOpenAIResponse(prompt);
-        if (result) setAiResult(result);
+        const res = await fetchOpenAIResponse(prompt);
+        if (res?.ok) {
+          setAiResult(res.result);
+        } else {
+          setAiResult(res?.error || 'Failed to generate AI summary.');
+        }
       }
     }
     getData();
@@ -206,10 +210,12 @@ if (isHistorical) {
       </div>
 
       <div className="flex-1 w-full max-w-6xl px-8 pb-16 flex gap-6 min-h-[500px] flex-wrap overflow-auto">
-        <div className="w-[400px] bg-white rounded-lg shadow px-3 py-2 mb-4">
-          <h2 className="text-2xl font-bold mb-4 text-center">Statistics Summary</h2>
-          <ReactMarkdown>{aiResult || "Loading summary..."}</ReactMarkdown>
-        </div>
+        {!isHistorical && (
+          <div className="w-[400px] bg-white rounded-lg shadow px-3 py-2 mb-4">
+            <h2 className="text-2xl font-bold mb-4 text-center">Statistics Summary</h2>
+            <ReactMarkdown>{aiResult || "Loading summary..."}</ReactMarkdown>
+          </div>
+        )}
 
         <div className="flex-grow bg-white rounded-lg shadow px-3 py-2 mb-4 flex flex-col items-center overflow-auto">
           {isHistorical ? (
