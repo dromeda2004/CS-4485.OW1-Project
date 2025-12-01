@@ -2,6 +2,7 @@ import { addressPoints as staticPoints } from "../addressPoints";
 
 // Normalizes various possible server responses into the expected shape:
 // Array of [lat, lng, weight]
+const continentCache = new Map();
 function normalizePoints(data) {
   
 
@@ -241,7 +242,7 @@ const DEFAULT_SEARCH_LOCATION_API =
   process.env.REACT_APP_SEARCH_LOCATION_URL ||
   "https://8rhqi3yodd.execute-api.us-east-1.amazonaws.com/production/search-location";
 
-  const continentCache = new Map();
+  
 export async function aggregateStatsByContinent(points) {
   const aggregation = {};
 

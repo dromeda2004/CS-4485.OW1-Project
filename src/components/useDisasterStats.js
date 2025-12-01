@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { getContinentFromCoordinates, aggregateStatsByContinent } from "../api/addressPointsApi"; // your API function
 
-export function useDisasterStats(points) {
+export function useDisasterStats(points,historicalPointsForLive = []) {
 
   const [continentStats, setContinentStats] = useState({
     continentCounts: {},
@@ -30,6 +30,7 @@ export function useDisasterStats(points) {
     return "High";
   }
 useEffect(() => {
+  let cancelled = false;
   async function computeContinents() {
     if (!points.length) {
       setContinentStats({ continentCounts: {}, impactByContinent: [] });
@@ -37,6 +38,7 @@ useEffect(() => {
     }
 
     const agg = await aggregateStatsByContinent(points);
+    if (cancelled || !agg) return;
 
     const continentCounts = {};
     agg.forEach(({ continent, count }) => {
@@ -52,7 +54,38 @@ useEffect(() => {
     setContinentStats({ continentCounts, impactByContinent });
   }
   computeContinents();
+      return () => {
+      cancelled = true;
+    };
 }, [points]);
+
+function computeTop5HistoricalAndLive(historicalPoints, livePoints) {
+    const all = [...(historicalPoints || []), ...(livePoints || [])];
+    if (!all.length) return [];
+
+    const byLocation = {};
+
+    all.forEach(([lat, lng, intensity, type, name]) => {
+      const locName = name || "Unknown";
+      const key = `${locName}:${lat.toFixed(3)},${lng.toFixed(3)}`;
+      if (!byLocation[key]) {
+        byLocation[key] = {
+          locationKey: key,
+          name: locName,
+          lat,
+          lng,
+          totalIntensity: 0,
+          eventCount: 0,
+        };
+      }
+      byLocation[key].totalIntensity += intensity || 0;
+      byLocation[key].eventCount += 1;
+    });
+
+    return Object.values(byLocation)
+      .sort((a, b) => b.eventCount - a.eventCount)
+      .slice(0, 5);
+  }
 
 
   return useMemo(() => {
@@ -66,6 +99,7 @@ useEffect(() => {
         continentCounts: {},
         avgIntensityByType: [],
         impactByContinent: [],
+        top5HistoricalAndLive: []
       };
     }
 
@@ -186,6 +220,11 @@ useEffect(() => {
 
     // You can add continentCounts, avgIntensityByType, impactByContinent similarly if continent data is provided
 
+        const top5HistoricalAndLive = computeTop5HistoricalAndLive(
+      historicalPointsForLive,
+      points
+    );
+
     return {
       pieData,
       stackedData,
@@ -194,7 +233,8 @@ useEffect(() => {
       severityPercentiles,
       continentCounts: continentStats.continentCounts,
       impactByContinent: continentStats.impactByContinent,
+      top5HistoricalAndLive
       // additional stats keys here...
     };
-  }, [points]);
+  }, [points, historicalPointsForLive, continentStats]);
 }

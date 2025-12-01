@@ -10,6 +10,15 @@ import { useDisasterStats } from "../components/useDisasterStats"; // Adjust pat
 function TopIntensityTable({ points, isHistorical }) {
   const top10 = [...points]
     .sort((a, b) => (b[2] || 0) - (a[2] || 0))
+    .reduce((unique, item) => {
+      // Deduplicate by location name (p[4])
+      const locationName = item[4] || "Unknown";
+      const exists = unique.some((u) => (u[4] || "Unknown") === locationName);
+      if (!exists) {
+        unique.push(item);
+      }
+      return unique;
+    }, [])
     .slice(0, 10);
   return (
     <div className="w-full bg-white rounded-lg shadow px-3 py-2 mb-6">
@@ -42,6 +51,49 @@ function TopIntensityTable({ points, isHistorical }) {
   );
 }
 
+function getLast7DaysDates() {
+  const dates = [];
+  const today = new Date();
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    dates.push(`${yyyy}-${mm}-${dd}`);
+  }
+  return dates;
+}
+
+// Aggregator: live + last-7-days historical
+function computeTop5HistoricalAndLive(historicalPoints, livePoints) {
+  const all = [...(historicalPoints || []), ...(livePoints || [])];
+  if (!all.length) return [];
+
+  const byLocation = {};
+
+  all.forEach(([lat, lng, intensity, type, name]) => {
+    const locName = name || "Unknown";
+    const key = `${locName}:${lat.toFixed(3)},${lng.toFixed(3)}`;
+    if (!byLocation[key]) {
+      byLocation[key] = {
+        locationKey: key,
+        name: locName,
+        lat,
+        lng,
+        totalIntensity: 0,
+        eventCount: 0,
+      };
+    }
+    byLocation[key].totalIntensity += intensity || 0;
+    byLocation[key].eventCount += 1;
+  });
+
+  return Object.values(byLocation)
+    .sort((a, b) => b.eventCount - a.eventCount)
+    .slice(0, 5);
+}
+
 export default function Stats() {
   const [isHistorical, setIsHistorical] = useState(false);
   const [historicalRows, setHistoricalRows] = useState([]);
@@ -50,10 +102,44 @@ export default function Stats() {
   const [selectedSnapshotDate, setSelectedSnapshotDate] = useState("2025-10-29"); // oldest snapshot default
   const [continentCounts, setContinentCounts] = useState({});
   const [impactByContinent, setImpactByContinent] = useState([]);
+  const [historicalForLive, setHistoricalForLive] = useState([]);
 
   function toggleDataSource() {
     setIsHistorical((prev) => !prev);
   }
+    useEffect(() => {
+    let cancelled = false;
+
+    async function loadHistoricalForLive() {
+      // Load all historical data from oldest to today
+      const dates = [];
+      const today = new Date();
+      const oldestDate = new Date(2025, 9, 29); // October 29, 2025 (oldest snapshot)
+      
+      const current = new Date(oldestDate);
+      while (current <= today) {
+        const yyyy = current.getFullYear();
+        const mm = String(current.getMonth() + 1).padStart(2, "0");
+        const dd = String(current.getDate()).padStart(2, "0");
+        dates.push(`${yyyy}-${mm}-${dd}`);
+        current.setDate(current.getDate() + 1);
+      }
+      
+      const all = [];
+      for (const d of dates) {
+        const archive = await fetchHeatmapArchiveElements(d);
+        if (archive?.points) {
+          all.push(...archive.points);
+        }
+      }
+      if (!cancelled) setHistoricalForLive(all);
+    }
+
+    loadHistoricalForLive();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     async function getData() {
@@ -113,7 +199,7 @@ export default function Stats() {
   }, [isHistorical, selectedSnapshotDate]);
 
   const points = isHistorical
-    ? historicalRows.map((row) => [row.lat, row.lng, row.intensity, row.type])
+    ? historicalRows.map((row) => [row.lat, row.lng, row.intensity, row.type, row.name])
     : livePoints;
 
   const {
@@ -137,6 +223,11 @@ export default function Stats() {
       averageIntensity: sum / counts[type],
     }));
   }, [points]);
+
+    const top5HistoricalAndLive = useMemo(
+    () => computeTop5HistoricalAndLive(historicalForLive, livePoints),
+    [historicalForLive, livePoints]
+  );
 
   useEffect(() => {
     async function computeContinentStats() {
@@ -165,7 +256,7 @@ export default function Stats() {
     computeContinentStats();
   }, [points]);
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28FF4'];
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28FF4', '#FF6699', '#33CC33', '#FF9933'];
 
   return (
     <div className="bg-[#517b9d] min-h-screen flex flex-col items-center p-8 font-sans overflow-auto">
@@ -218,6 +309,35 @@ export default function Stats() {
         )}
 
         <div className="flex-grow bg-white rounded-lg shadow px-3 py-2 mb-4 flex flex-col items-center overflow-auto">
+          {!isHistorical && top5HistoricalAndLive.length > 0 && (
+            <div className="w-full bg-white rounded-lg shadow px-3 py-2 mb-6">
+              <h2 className="text-2xl font-bold mb-4 text-center">
+                Top 5 Most Affected Locations (All Historical + Live)
+              </h2>
+              <table className="w-full text-left border-collapse border border-gray-300">
+                <thead>
+                  <tr>
+                    <th className="border border-gray-300 px-3 py-2">Location</th>
+                    <th className="border border-gray-300 px-3 py-2">Total Intensity</th>
+                    <th className="border border-gray-300 px-3 py-2">Event Count</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {top5HistoricalAndLive.map((loc) => (
+                    <tr key={loc.locationKey}>
+                      <td className="border border-gray-300 px-3 py-2">{loc.name}</td>
+                      <td className="border border-gray-300 px-3 py-2">
+                        {loc.totalIntensity.toFixed(0)}
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2">
+                        {loc.eventCount}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
           {isHistorical ? (
             <>
               <h2 className="text-2xl font-bold mb-4 text-center">Disaster Type Distribution</h2>

@@ -104,7 +104,7 @@ export default function Home() {
       Wildfires: "🔥",
       Earthquakes: "🌎",
       Tsunamis: "🌊",
-      Floods: "🌧️",
+      Floods: "💧",
       Tornado: "🌪️",
       Storms: "⛈️",
       default: "📍",
