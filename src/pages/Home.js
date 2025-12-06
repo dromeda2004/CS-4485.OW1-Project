@@ -672,7 +672,7 @@ export default function Home() {
 
           <div className="mt-4 flex items-center gap-4 w-full">
             <span className="font-bold text-black text-lg">Heatmap</span>
-            <div className="flex-1 h-[27px] rounded-[5px] bg-gradient-to-r from-yellow-300 to-red-600" />
+            <div className="flex-1 h-[27px] rounded-[5px] bg-heatmap-gradient" />
           </div>
         </div>
       </div>
