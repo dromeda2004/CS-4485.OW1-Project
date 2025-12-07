@@ -186,7 +186,7 @@ export default function Stats() {
           })
           .join("\n");
 
-        const prompt = `You are an assistant that summarizes disaster heatmap data for emergency managers.\n\nCounts by type: ${countsLine}\n\nTop hotspots (by intensity):\n${hotspotLines}\n\nTask: In 100 words, summarize the current situation. Use only the data provided.`;
+        const prompt = `You are an assistant that summarizes disaster heatmap data for emergency managers.\n\nCounts by type: ${countsLine}\n\nTop hotspots (by intensity):\n${hotspotLines}\n\nTask: In 100 words, summarize the current situation in general terms for user to understand. Use only the data provided.`;
         const res = await fetchOpenAIResponse(prompt);
         if (res?.ok) {
           setAiResult(res.result);
@@ -302,9 +302,11 @@ export default function Stats() {
 
       <div className="flex-1 w-full max-w-6xl px-8 pb-16 flex gap-6 min-h-[500px] flex-wrap overflow-auto">
         {!isHistorical && (
-          <div className="w-[400px] bg-white rounded-lg shadow px-3 py-2 mb-4">
+          <div className="w-full bg-white rounded-lg shadow px-3 py-2 mb-4">
             <h2 className="text-2xl font-bold mb-4 text-center">Statistics Summary</h2>
-            <ReactMarkdown>{aiResult || "Loading summary..."}</ReactMarkdown>
+            <div className="flex justify-center">
+              <ReactMarkdown>{aiResult || "Loading summary..."}</ReactMarkdown>
+            </div>
           </div>
         )}
 
