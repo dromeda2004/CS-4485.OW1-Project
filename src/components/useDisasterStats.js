@@ -147,7 +147,15 @@ function computeTop5HistoricalAndLive(historicalPoints, livePoints) {
     });
 
     // Pie chart array
-    const pieData = Object.entries(categorizedCounts).map(([name, value]) => ({ name, value }));
+    const pieData = Object.entries(categorizedCounts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => {
+        // Sort "Other" to the end
+        if (a.name === "Other") return 1;
+        if (b.name === "Other") return -1;
+        // Otherwise sort by value descending
+        return b.value - a.value;
+      });
 
     // Stacked bar data array
     const stackedData = Object.values(intensityMap);

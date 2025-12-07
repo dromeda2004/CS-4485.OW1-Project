@@ -198,9 +198,12 @@ export default function Stats() {
     getData();
   }, [isHistorical, selectedSnapshotDate]);
 
-  const points = isHistorical
-    ? historicalRows.map((row) => [row.lat, row.lng, row.intensity, row.type, row.name])
-    : livePoints;
+  const points = useMemo(() => 
+    isHistorical
+      ? historicalRows.map((row) => [row.lat, row.lng, row.intensity, row.type, row.name])
+      : livePoints,
+    [isHistorical, historicalRows, livePoints]
+  );
 
   const {
     pieData,
@@ -267,8 +270,8 @@ export default function Stats() {
           <Link to="/home" className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20">Home</Link>
           <Link to="/breakingposts" className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20">Breaking Posts</Link>
           <Link to="/firstresponders" className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20">First Responders</Link>
-          <Link to="/faq" className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20">FAQ</Link>
           <Link to="/statistics" className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20">Statistics</Link>
+          <Link to="/faq" className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20">FAQ</Link>
         </nav>
       </header>
 
@@ -344,15 +347,17 @@ export default function Stats() {
             <>
               <h2 className="text-2xl font-bold mb-4 text-center">Disaster Type Distribution</h2>
               {pieData.length ? (
-                <PieChart width={400} height={400}>
-                  <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={150} label>
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
+                <div className="w-full flex justify-center mb-6">
+                  <PieChart width={500} height={400}>
+                    <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={150} label>
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </div>
               ) : (
                 <p className="text-gray-600 mt-20">No disaster type data to display.</p>
               )}
@@ -471,15 +476,17 @@ export default function Stats() {
             <>
               <h2 className="text-2xl font-bold mb-4 text-center">Disaster Type Distribution</h2>
               {pieData.length ? (
-                <PieChart width={400} height={400}>
-                  <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={150} label>
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
+                <div className="w-full flex justify-center mb-6">
+                  <PieChart width={500} height={400}>
+                    <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={150} label>
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </div>
               ) : (
                 <p className="text-gray-600 mt-20">No disaster type data to display.</p>
               )}

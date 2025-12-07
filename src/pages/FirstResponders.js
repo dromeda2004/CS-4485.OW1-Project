@@ -32,8 +32,8 @@ export default function FirstResponders() {
           <Link to="/home" className="px-4 py-2 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors duration-200">Home</Link>
           <Link to="/breakingposts" className="px-4 py-2 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors duration-200">Breaking Posts</Link>
           <Link to="/firstresponders" className="px-4 py-2 rounded-md bg-white/20 text-white hover:bg-white/30 transition-colors duration-200">First Responders</Link>
-          <Link to="/faq" className="px-4 py-2 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors duration-200">FAQ</Link>
           <Link to="/statistics" className="px-4 py-2 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors duration-200">Statistics</Link>
+          <Link to="/faq" className="px-4 py-2 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors duration-200">FAQ</Link>
         </nav>
       </header>
 

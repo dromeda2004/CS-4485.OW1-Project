@@ -359,16 +359,16 @@ export default function Home() {
             First Responders
           </Link>
           <Link
-            to="/faq"
-            className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20"
-          >
-            FAQ
-          </Link>
-          <Link
             to="/statistics"
             className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20"
           >
             Statistics
+          </Link>
+          <Link
+            to="/faq"
+            className="px-3 py-1 rounded-md bg-white/10 text-white hover:bg-white/20"
+          >
+            FAQ
           </Link>
         </nav>
       </header>

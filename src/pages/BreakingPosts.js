@@ -98,8 +98,8 @@ export default function DisasterTracker() {
           <Link to="/home" className="px-3 py-1 rounded-md bg-white/5 text-white hover:bg-white/10">Home</Link>
           <Link to="/breakingposts" className="px-3 py-1 rounded-md bg-white/5 text-white hover:bg-white/10">Breaking Posts</Link>
           <Link to="/firstresponders" className="px-3 py-1 rounded-md bg-white/5 text-white hover:bg-white/10">First Responders</Link>
-          <Link to="/faq" className="px-3 py-1 rounded-md bg-white/5 text-white hover:bg-white/10">FAQ</Link>
           <Link to="/statistics" className="px-3 py-1 rounded-md bg-white/5 text-white hover:bg-white/10">Statistics</Link>
+          <Link to="/faq" className="px-3 py-1 rounded-md bg-white/5 text-white hover:bg-white/10">FAQ</Link>
         </nav>
       </header>
 

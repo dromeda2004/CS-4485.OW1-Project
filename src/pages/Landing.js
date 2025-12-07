@@ -53,6 +53,15 @@ export default function Landing() {
         }}>
           First Responders
         </Link>
+        <Link to="/statistics" style={{
+          padding: "10px 18px",
+          background: "#374151",
+          color: "#fff",
+          textDecoration: "none",
+          borderRadius: 6
+        }}>
+          Statistics
+        </Link>
         <Link to="/faq" style={{
           padding: "10px 18px",
           background: "#374151",
