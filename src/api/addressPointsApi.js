@@ -198,7 +198,7 @@ export async function fetchTopPostsByLocation(locationName, { url = DEFAULT_TOP_
   }
 }
 
-const OPENCAGE_API_KEY = process.env.REACT_APP_OPENCAGE_KEY || "8d40320b83894c10a74a5911e01b9d0a";
+const OPENCAGE_API_KEY = process.env.REACT_APP_OPENCAGE_KEY || "cdad6a47a05245aaa151025c8cd4861c";
 
 
 export async function getContinentFromCoordinates(lat, lng, { apiKey = OPENCAGE_API_KEY, timeout = 7000 } = {}) {
